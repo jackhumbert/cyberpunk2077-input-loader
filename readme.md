@@ -5,7 +5,7 @@ This plugin looks for all `r6/input/*.xml` files and merges them with the approp
 ## Usage
 
 1. Install [RED4ext](https://github.com/WopsS/RED4ext)
-2. Install Input Loader using the [latest release](releases/latest), at `red4ext/plugins/`
+2. Install Input Loader using the [latest release](https://github.com/jackhumbert/cyberpunk2077-input-loader/releases/latest), at `red4ext/plugins/`
 3. Place a mod's custom .xml file in `r6/input/`
 4. Start the game
 
