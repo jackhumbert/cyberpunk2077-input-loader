@@ -186,48 +186,32 @@ void LoadInputConfigs() {
     return;
 }
 
-BOOL APIENTRY DllMain(HMODULE aModule, DWORD aReason, LPVOID aReserved)
+RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle, RED4ext::EMainReason aReason, const RED4ext::Sdk* aSdk)
 {
-    switch (aReason)
-    {
-    case DLL_PROCESS_ATTACH:
-    {
-        DisableThreadLibraryCalls(aModule);
+    switch (aReason) {
+        case RED4ext::EMainReason::Load: {
+            //DisableThreadLibraryCalls(aHandle);
 
-        Utils::CreateLogger();
-        spdlog::info("Starting up");
-        LoadInputConfigs();
-
-        break;
-    }
-    case DLL_PROCESS_DETACH:
-    {
-        spdlog::info("Shutting down");
-        spdlog::shutdown();
-
-        break;
-    }
+            Utils::CreateLogger();
+            spdlog::info("Starting up");
+            LoadInputConfigs();
+            break;
+        }
+        case RED4ext::EMainReason::Unload: {
+            spdlog::info("Shutting down");
+            spdlog::shutdown();
+            break;
+        }
     }
 
-    return TRUE;
-}
-
-RED4EXT_C_EXPORT bool RED4EXT_CALL Load(RED4ext::PluginHandle aHandle, const RED4ext::IRED4ext* aInterface)
-{
-    
-    return true;
-}
-
-RED4EXT_C_EXPORT void RED4EXT_CALL Unload()
-{
-    
+  return true;
 }
 
 RED4EXT_C_EXPORT void RED4EXT_CALL Query(RED4ext::PluginInfo* aInfo)
 {
     aInfo->name = L"Input Loader";
     aInfo->author = L"Jack Humbert";
-    aInfo->version = RED4EXT_SEMVER(0, 0, 1);
+    aInfo->version = RED4EXT_SEMVER(0, 0, 2);
     aInfo->runtime = RED4EXT_RUNTIME_LATEST;
     aInfo->sdk = RED4EXT_SDK_LATEST;
 }

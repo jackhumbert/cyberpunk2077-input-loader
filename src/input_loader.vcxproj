@@ -53,8 +53,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)build\release\bin\</OutDir>
-    <IncludePath>../deps/red4ext.sdk/include;../deps/spdlog/include;../deps/detours/include;../deps/pugixml/src;$(IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../deps/spdlog/build/Release;../deps/detours/lib.X64;../deps/pugixml/src</LibraryPath>
+    <IncludePath>../deps/red4ext.sdk/include;../deps/spdlog/include;../deps/detours/src;../deps/pugixml/src;$(IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../deps/spdlog/build/Release;../deps/detours/lib.X64;</LibraryPath>
     <SourcePath>$(VC_SourcePath);../deps/pugixml/src;</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
