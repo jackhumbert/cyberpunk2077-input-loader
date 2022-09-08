@@ -19,7 +19,7 @@
 #include "Utils.hpp"
 #include "stdafx.hpp"
 
-pugi::xml_document LoadDocument(std::filesystem::path path) {
+pugi::xml_document LoadDocument(std::filesystem::path path, bool * status = nullptr) {
 
     pugi::xml_document document;
     std::string documentPath = (Utils::GetRootDir() / path).string();
@@ -27,14 +27,18 @@ pugi::xml_document LoadDocument(std::filesystem::path path) {
 
     if (!result)
     {
-        spdlog::error("XML parsed with errors, attr value: {}", document.child("node").attribute("attr").value());
+        spdlog::error("XML document parsed with errors: {}", documentPath);
         spdlog::error("Error description: {}", result.description());
         spdlog::error("Error offset: {}", result.offset);
+        if (status)
+          *status = false;
         return document;
     }
 
     spdlog::info("Loaded document: {}", documentPath);
 
+    if (status)
+      *status = true;
     return document;
 }
 
@@ -137,7 +141,13 @@ void LoadInputConfigs() {
         }
 
         inputContextsOriginal = LoadDocument("r6/config/inputContexts.xml");
-        inputUserMappingsOriginal = LoadDocument("r6/config/inputUserMappings.xml");
+        // malformed XML in 1.6, so we need to load the supplied .xml if this fails
+        bool fixed = false;
+        inputUserMappingsOriginal = LoadDocument("r6/config/inputUserMappings.xml", &fixed);
+        if (!fixed) {
+          spdlog::info("Loading backup inputUserMappings.xml");
+          inputUserMappingsOriginal = LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
+        }
 
         for (const auto& entry : std::filesystem::recursive_directory_iterator(inputDir))
         {
@@ -211,7 +221,7 @@ RED4EXT_C_EXPORT void RED4EXT_CALL Query(RED4ext::PluginInfo* aInfo)
 {
     aInfo->name = L"Input Loader";
     aInfo->author = L"Jack Humbert";
-    aInfo->version = RED4EXT_SEMVER(0, 0, 5);
+    aInfo->version = RED4EXT_SEMVER(0, 0, 6);
     aInfo->runtime = RED4EXT_RUNTIME_LATEST;
     aInfo->sdk = RED4EXT_SDK_LATEST;
 }
