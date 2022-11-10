@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+#include <string_view>
 
 #include <RED4ext/RED4ext.hpp>
 #include <RED4ext/Scripting/Natives/Generated/Vector4.hpp>
@@ -42,22 +44,47 @@ pugi::xml_document LoadDocument(std::filesystem::path path, bool * status = null
     return document;
 }
 
-// https://stackoverflow.com/questions/20303821/how-to-check-if-string-is-in-array-of-strings
-bool in_array(const std::string& value, const std::vector<std::string>& array)
-{
-    return std::find(array.begin(), array.end(), value) != array.end();
-}
-
-std::vector<std::string> valid_inputUserMappings = {
-    "mapping", "buttonGroup", "pairedAxes", "preset"
-};
-
-std::vector<std::string> valid_inputContexts = {
-    "blend", "context", "hold", "multitap", "repeat", "toggle", "acceptedEvents"
-};
-
 pugi::xml_document inputContextsOriginal;
 pugi::xml_document inputUserMappingsOriginal;
+
+pugi::xml_document* find_document(pugi::xml_node const& node)
+{
+  constexpr std::array user_nodes = {
+    "mapping", "buttonGroup", "pairedAxes", "preset",
+  };
+  constexpr std::array context_nodes = {
+    "blend", "context", "hold", "multitap", "repeat", "toggle", "acceptedEvents",
+  };
+
+  std::string_view name = node.name();
+
+  if (std::ranges::find(user_nodes, name) != user_nodes.end())
+  {
+    return &inputUserMappingsOriginal;
+  }
+  else if (std::ranges::find(context_nodes, name) != context_nodes.end())
+  {
+    return &inputContextsOriginal;
+  }
+  else
+  {
+    return nullptr;
+  }
+}
+
+const char* find_unique_key(pugi::xml_node const& node)
+{
+  std::string_view name = node.name();
+
+  if (name == "multitap" || name == "repeat" || name == "hold")
+  {
+    return "action";
+  }
+  else
+  {
+    return "name";
+  }
+}
 
 void MergeModDocument(std::filesystem::path path)
 {
@@ -90,23 +117,16 @@ void MergeModDocument(std::filesystem::path path)
     for (pugi::xml_node modNode : modDocument.child("bindings").children())
     {
         spdlog::info("Processing mod input block: {}", modNode.name());
-        pugi::xml_node existing;
-        pugi::xml_document* document;
-        if (in_array(modNode.name(), valid_inputContexts))
-        {
-            existing = inputContextsOriginal.child("bindings").find_child_by_attribute(modNode.name(), "name", modNode.attribute("name").as_string());
-            document = &inputContextsOriginal;
-        }
-        else if (in_array(modNode.name(), valid_inputUserMappings))
-        {
-            existing = inputUserMappingsOriginal.child("bindings").find_child_by_attribute(modNode.name(), "name", modNode.attribute("name").as_string());
-            document = &inputUserMappingsOriginal;
-        }
-        else
+        auto document = find_document(modNode);
+        if (!document)
         {
             spdlog::warn("<bindings> child '{}' not valid", modNode.name());
             continue;
         }
+        auto key = find_unique_key(modNode);
+        auto existing = document->child("bindings")
+            .find_child_by_attribute(modNode.name(), key, modNode.attribute(key).as_string());
+
         if (existing)
         {
             if (modNode.attribute("append").as_bool()) {
