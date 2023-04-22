@@ -1,18 +1,6 @@
 #include <iostream>
 
 #include <RED4ext/RED4ext.hpp>
-#include <RED4ext/Scripting/Natives/Generated/Vector4.hpp>
-#include <RED4ext/Scripting/Natives/ScriptGameInstance.hpp>
-#include <RED4ext/Scripting/IScriptable.hpp>
-#include <RED4ext/RTTITypes.hpp>
-#include <RED4ext/Scripting/Natives/Generated/red/ResourceReferenceScriptToken.hpp>
-#include <RED4ext/Scripting/Natives/Generated/game/data/VehicleTPPCameraParams_Record.hpp>
-#include <RED4ext/Scripting/Natives/Generated/ink/ImageWidget.hpp>
-#include <RED4ext/Scripting/Natives/Generated/ink/TextureAtlas.hpp>
-#include <RED4ext/Scripting/Natives/Generated/ink/EBlurDimension.hpp>
-#include <RED4ext/Scripting/Natives/Generated/ink/BoxBlurEffect.hpp>
-#include <RED4ext/InstanceType.hpp>
-#include <RED4ext/Scripting/Natives/Generated/ink/IEffect.hpp>
 
 #include <pugixml.hpp>
 
@@ -203,7 +191,7 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle, RED4ext::
             //DisableThreadLibraryCalls(aHandle);
 
             Utils::CreateLogger();
-            spdlog::info("Starting up Input Loader v0.0.10");
+            spdlog::info("Starting up Input Loader v0.1.0");
             LoadInputConfigs();
             break;
         }
@@ -221,8 +209,8 @@ RED4EXT_C_EXPORT void RED4EXT_CALL Query(RED4ext::PluginInfo* aInfo)
 {
     aInfo->name = L"Input Loader";
     aInfo->author = L"Jack Humbert";
-    aInfo->version = RED4EXT_SEMVER(0, 0, 10);
-    aInfo->runtime = RED4EXT_RUNTIME_LATEST;
+    aInfo->version = RED4EXT_SEMVER(0, 1, 0);
+    aInfo->runtime = RED4EXT_RUNTIME_INDEPENDENT;
     aInfo->sdk = RED4EXT_SDK_LATEST;
 }
 
