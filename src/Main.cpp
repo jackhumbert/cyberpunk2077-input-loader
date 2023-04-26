@@ -48,8 +48,7 @@ std::vector<std::string> valid_inputContexts = {
 pugi::xml_document inputContextsOriginal;
 pugi::xml_document inputUserMappingsOriginal;
 
-extern "C" __declspec(dllexport)
-void MergeModDocument(std::filesystem::path path)
+RED4EXT_C_EXPORT void RED4EXT_CALL MergeModDocument(std::filesystem::path path)
 {
     // inputUserMappings.xml bindings children:
     // * mapping
