@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.24)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/deps/cyberpunk_cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/deps/red4ext.sdk/cmake")
+project(input_loader VERSION 0.2.0)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/deps/cyberpunk_cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/deps/red4ext.sdk/cmake")
 
 include(CyberpunkMod)
-
-project(input_loader VERSION 0.2.0)
 
 configure_mod(
   NAME "Input Loader"
@@ -20,6 +20,8 @@ find_package(Spdlog)
 find_package(Pugixml)
 
 configure_red4ext(src)
+
+target_include_directories(${MOD_SLUG}.dll PUBLIC ${MOD_SOURCE_DIR}/include)
 
 target_link_libraries(${MOD_SLUG}.dll
   PUBLIC
