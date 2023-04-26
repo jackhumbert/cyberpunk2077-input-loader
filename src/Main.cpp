@@ -6,6 +6,7 @@
 
 #include "Utils.hpp"
 #include "stdafx.hpp"
+#include <InputLoader/MergeModDocument.hpp>
 
 namespace InputLoader {
 pugi::xml_document LoadDocument(std::filesystem::path path, bool * status = nullptr) {
@@ -48,7 +49,7 @@ std::vector<std::string> valid_inputContexts = {
 pugi::xml_document inputContextsOriginal;
 pugi::xml_document inputUserMappingsOriginal;
 
-RED4EXT_C_EXPORT void RED4EXT_CALL MergeModDocument(std::filesystem::path path)
+void MergeModDocument(std::filesystem::path path)
 {
     // inputUserMappings.xml bindings children:
     // * mapping

@@ -30,6 +30,8 @@ target_link_libraries(${MOD_SLUG}.dll
     pugixml
 )
 
+target_compile_definitions(${MOD_SLUG}.dll PRIVATE DLLDIR_EX)
+
 configure_mod_file(inputUserMappings.xml red4ext/plugins/${MOD_SLUG}/inputUserMappings.xml)
 configure_uninstall_file(engine/config/platform/pc/input_loader.ini)
 configure_uninstall_file(r6/cache/inputContexts.xml)
