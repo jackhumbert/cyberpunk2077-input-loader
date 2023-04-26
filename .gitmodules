@@ -6,7 +6,11 @@
 	url = https://github.com/microsoft/Detours.git
 [submodule "deps/red4ext.sdk"]
 	path = deps/red4ext.sdk
-	url = https://github.com/WopsS/RED4ext.SDK.git
+	url = git@github.com:jackhumbert/RED4ext.SDK.git
+	branch = new-types
 [submodule "deps/pugixml"]
 	path = deps/pugixml
 	url = https://github.com/zeux/pugixml.git
+[submodule "deps/cyberpunk_cmake"]
+	path = deps/cyberpunk_cmake
+	url = git@github.com:jackhumbert/cyberpunk_cmake.git

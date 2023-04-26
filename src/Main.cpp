@@ -7,6 +7,7 @@
 #include "Utils.hpp"
 #include "stdafx.hpp"
 
+namespace InputLoader {
 pugi::xml_document LoadDocument(std::filesystem::path path, bool * status = nullptr) {
 
     pugi::xml_document document;
@@ -47,6 +48,7 @@ std::vector<std::string> valid_inputContexts = {
 pugi::xml_document inputContextsOriginal;
 pugi::xml_document inputUserMappingsOriginal;
 
+extern "C" __declspec(dllexport)
 void MergeModDocument(std::filesystem::path path)
 {
     // inputUserMappings.xml bindings children:
@@ -117,8 +119,21 @@ void MergeModDocument(std::filesystem::path path)
 
 }
 
-void LoadInputConfigs() {
+void LoadOriginals() {
+    spdlog::info("Loading original input Ccnfigs for merging");
 
+    inputContextsOriginal = LoadDocument("r6/config/inputContexts.xml");
+    // malformed XML in 1.6, so we need to load the supplied .xml if this fails
+    bool fixed = false;
+    inputUserMappingsOriginal = LoadDocument("r6/config/inputUserMappings.xml", &fixed);
+    if (!fixed) {
+        spdlog::info("Loading backup inputUserMappings.xml");
+        inputUserMappingsOriginal = LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
+    }
+}
+
+bool LoadInputConfigs(RED4ext::CGameApplication *) {
+    spdlog::info("Loading input configs from mods");
     // block mostly copied from https://github.com/WopsS/TweakDBext/blob/master/src/Hooks.cpp
     auto inputDir = Utils::GetRootDir() / "r6/input";
     try
@@ -127,16 +142,6 @@ void LoadInputConfigs() {
         {
             std::filesystem::create_directories(inputDir);
         }
-
-        inputContextsOriginal = LoadDocument("r6/config/inputContexts.xml");
-        // malformed XML in 1.6, so we need to load the supplied .xml if this fails
-        bool fixed = false;
-        inputUserMappingsOriginal = LoadDocument("r6/config/inputUserMappings.xml", &fixed);
-        if (!fixed) {
-          spdlog::info("Loading backup inputUserMappings.xml");
-          inputUserMappingsOriginal = LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
-        }
-
         for (const auto& entry : std::filesystem::recursive_directory_iterator(inputDir))
         {
             const auto& path = entry.path();
@@ -181,7 +186,9 @@ void LoadInputConfigs() {
     fw << fileContents;
     fw.close();
 
-    return;
+    return true;
+}
+
 }
 
 RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle, RED4ext::EMainReason aReason, const RED4ext::Sdk* aSdk)
@@ -191,8 +198,15 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle, RED4ext::
             //DisableThreadLibraryCalls(aHandle);
 
             Utils::CreateLogger();
-            spdlog::info("Starting up Input Loader v0.1.0");
-            LoadInputConfigs();
+            spdlog::info("Starting up Input Loader {}", MOD_VERSION_STR);
+            RED4ext::GameState initState;
+            initState.OnEnter = nullptr;
+            initState.OnUpdate = nullptr;
+            initState.OnExit = &InputLoader::LoadInputConfigs;
+
+            aSdk->gameStates->Add(aHandle, RED4ext::EGameStateType::BaseInitialization, &initState);
+
+            InputLoader::LoadOriginals();
             break;
         }
         case RED4ext::EMainReason::Unload: {
@@ -209,7 +223,7 @@ RED4EXT_C_EXPORT void RED4EXT_CALL Query(RED4ext::PluginInfo* aInfo)
 {
     aInfo->name = L"Input Loader";
     aInfo->author = L"Jack Humbert";
-    aInfo->version = RED4EXT_SEMVER(0, 1, 0);
+    aInfo->version = RED4EXT_SEMVER(MOD_VERSION_MAJOR, MOD_VERSION_MINOR, MOD_VERSION_PATCH);
     aInfo->runtime = RED4EXT_RUNTIME_INDEPENDENT;
     aInfo->sdk = RED4EXT_SDK_LATEST;
 }

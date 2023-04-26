@@ -1,0 +1,29 @@
+{
+    "tasks": [
+        {
+            "type": "cmake",
+            "label": "Build",
+            "command": "build",
+            "targets": [
+                "ALL_BUILD"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Cyberpunk 2077 mod build step"
+        },
+        {
+            "type": "cmake",
+            "label": "Install",
+            "command": "install",
+            "problemMatcher": [],
+            "detail": "Cyberpunk 2077 mod install into the game's directory"
+        },
+        {
+            "type": "cmake",
+            "label": "Configure",
+            "command": "configure",
+            "problemMatcher": [],
+            "detail": "Re-run CMake configure"
+        }
+    ]
+}

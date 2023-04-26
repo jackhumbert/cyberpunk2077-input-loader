@@ -1,4 +1,3 @@
-src/x64
-src/build
-.vs
+build/
+game_dir/
 *.zip

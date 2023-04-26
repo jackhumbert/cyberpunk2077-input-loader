@@ -9,10 +9,10 @@ void Utils::CreateLogger()
     auto rootDir = GetRootDir();
     auto red4extDir = rootDir / L"red4ext";
     auto logsDir = red4extDir / L"logs";
-    auto logFile = logsDir / "input_loader.log";
+    spdlog::filename_t logFile = (logsDir / L"input_loader.log");
 
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto file = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.string(), true);
+    auto file = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile, true);
 
     spdlog::sinks_init_list sinks = {console, file};
 
