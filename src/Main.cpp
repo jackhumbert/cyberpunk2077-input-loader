@@ -49,7 +49,7 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
-void Add(std::filesystem::path &path) {
+void Add(std::filesystem::path path) {
     spdlog::info(L"Will load document: {}", path.c_str()); 
     document_paths.emplace_back(path); 
 }
