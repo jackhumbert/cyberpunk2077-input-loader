@@ -11,6 +11,6 @@
 
 namespace InputLoader {
 
-DLLDIR void MergeModDocument(std::filesystem::path path);
+DLLDIR void Add(std::filesystem::path &path);
 
 }
