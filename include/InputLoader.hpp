@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <RED4ext/RED4ext.hpp>
 
 #ifdef DLLDIR_EX
    #define DLLDIR  __declspec(dllexport)   // export DLL information
@@ -11,6 +12,6 @@
 
 namespace InputLoader {
 
-DLLDIR void Add(std::filesystem::path path);
+DLLDIR void Add(RED4ext::PluginHandle* aHandle, std::filesystem::path path);
 
 }

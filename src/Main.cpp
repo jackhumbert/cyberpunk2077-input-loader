@@ -52,7 +52,12 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
-void Add(std::filesystem::path path) {
+void Add(RED4ext::PluginHandle *aHandle, std::filesystem::path path) {
+  if (path.is_relative()) {
+    char dllFilePath[513] = {0};
+    GetModuleFileNameA(*aHandle, dllFilePath, 512);
+    path = dllFilePath / path;
+  }
   spdlog::info(L"Will load document: {}", path.c_str());
   document_paths.emplace_back(path);
 }
@@ -129,7 +134,8 @@ void LoadOriginals() {
   inputUserMappingsOriginal =
       LoadDocument("r6/config/inputUserMappings.xml", &fixed);
   if (!fixed) {
-    spdlog::info("The above is a normal error in 1.6+ - loading backup inputUserMappings.xml");
+    spdlog::info("The above is a normal error in 1.6+ - loading backup "
+                 "inputUserMappings.xml");
     inputUserMappingsOriginal =
         LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
   }
