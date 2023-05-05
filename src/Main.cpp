@@ -28,7 +28,7 @@ pugi::xml_document LoadDocument(std::filesystem::path path,
     return document;
   }
 
-  spdlog::info("Loaded document: {}", documentPath);
+  // spdlog::info("Loaded document: {}", documentPath);
 
   if (status)
     *status = true;
@@ -56,7 +56,8 @@ void Add(RED4ext::PluginHandle aHandle, std::filesystem::path path) {
   if (path.is_relative()) {
     char dllFilePath[513] = {0};
     GetModuleFileNameA(aHandle, dllFilePath, 512);
-    path = dllFilePath / path;
+    std::filesystem::path dllPath(dllFilePath);
+    path = dllPath.parent_path() / path;
   }
   spdlog::info(L"Will load document: {}", path.c_str());
   document_paths.emplace_back(path);
@@ -88,6 +89,7 @@ void MergeDocument(std::filesystem::path path) {
   // pugi::xml_document modDocument =
   // LoadDocument("r6/input/flight_control.xml");
   pugi::xml_document modDocument = LoadDocument(path);
+  spdlog(L"Loading document: {}", path.c_str());
 
   // process bindings
   for (pugi::xml_node modNode : modDocument.child("bindings").children()) {
