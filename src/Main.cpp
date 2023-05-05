@@ -13,7 +13,10 @@ pugi::xml_document LoadDocument(std::filesystem::path path,
                                 bool *status = nullptr) {
 
   pugi::xml_document document;
-  std::string documentPath = (Utils::GetRootDir() / path).string();
+  if (path.is_relative()) {
+    path = Utils::GetRootDir() / path;
+  }
+  std::string documentPath = (path).string();
   pugi::xml_parse_result result = document.load_file(documentPath.c_str());
 
   if (!result) {
@@ -50,11 +53,8 @@ pugi::xml_document inputUserMappingsOriginal;
 static std::vector<std::filesystem::path> document_paths;
 
 void Add(std::filesystem::path path) {
-    if (path.is_relative()) {
-        path = Utils::GetRootDir() / path;
-    }
-    spdlog::info(L"Will load document: {}", path.c_str()); 
-    document_paths.emplace_back(path); 
+  spdlog::info(L"Will load document: {}", path.c_str());
+  document_paths.emplace_back(path);
 }
 
 void MergeDocument(std::filesystem::path path) {
@@ -82,11 +82,11 @@ void MergeDocument(std::filesystem::path path) {
 
   // pugi::xml_document modDocument =
   // LoadDocument("r6/input/flight_control.xml");
-  pugi::xml_document modDocument = LoadDocument(path.c_str());
+  pugi::xml_document modDocument = LoadDocument(path);
 
   // process bindings
   for (pugi::xml_node modNode : modDocument.child("bindings").children()) {
-    spdlog::info("Processing mod input block: {}", modNode.name());
+    spdlog::info("* Processing mod input block: {}", modNode.name());
     pugi::xml_node existing;
     pugi::xml_document *document;
     if (in_array(modNode.name(), valid_inputContexts)) {
@@ -102,7 +102,7 @@ void MergeDocument(std::filesystem::path path) {
                                        modNode.attribute("name").as_string());
       document = &inputUserMappingsOriginal;
     } else {
-      spdlog::warn("<bindings> child '{}' not valid", modNode.name());
+      spdlog::warn("* <bindings> child '{}' not valid", modNode.name());
       continue;
     }
     if (existing) {
@@ -121,7 +121,7 @@ void MergeDocument(std::filesystem::path path) {
 }
 
 void LoadOriginals() {
-  spdlog::info("Loading original input Ccnfigs for merging");
+  spdlog::info("Loading original input configs for merging");
 
   inputContextsOriginal = LoadDocument("r6/config/inputContexts.xml");
   // malformed XML in 1.6, so we need to load the supplied .xml if this fails
@@ -129,14 +129,13 @@ void LoadOriginals() {
   inputUserMappingsOriginal =
       LoadDocument("r6/config/inputUserMappings.xml", &fixed);
   if (!fixed) {
-    spdlog::info("Loading backup inputUserMappings.xml");
+    spdlog::info("The above is a normal error in 1.6+ - loading backup inputUserMappings.xml");
     inputUserMappingsOriginal =
         LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
   }
 }
 
 bool LoadInputConfigs(RED4ext::CGameApplication *) {
-  spdlog::info("Loading input configs from mods");
   // block mostly copied from
   // https://github.com/WopsS/TweakDBext/blob/master/src/Hooks.cpp
   auto inputDir = Utils::GetRootDir() / "r6/input";
@@ -145,6 +144,7 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
       std::filesystem::create_directories(inputDir);
     }
     // load xml documents in r6/input
+    spdlog::info("Loading input configs from r6/input");
     for (const auto &entry :
          std::filesystem::recursive_directory_iterator(inputDir)) {
       const auto &path = entry.path();
@@ -152,34 +152,35 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
         try {
           MergeDocument(path);
         } catch (const std::exception &ex) {
-          spdlog::error("An exception occured while trying to load '{}'",
-                        (void *)path.c_str());
+          spdlog::error(L"An exception occured while trying to load '{}'",
+                        path.c_str());
           // spdlog::error(ex.what());
         } catch (...) {
-          spdlog::error("An unknown error occured while trying to load '{}'",
-                        (void *)path.c_str());
+          spdlog::error(L"An unknown error occured while trying to load '{}'",
+                        path.c_str());
         }
       }
     }
+    spdlog::info("Loading input configs from dynamically added paths");
     for (const auto &path : document_paths) {
       try {
         MergeDocument(path);
       } catch (const std::exception &ex) {
-        spdlog::error("An exception occured while trying to load '{}'",
-                      (void *)path.c_str());
+        spdlog::error(L"An exception occured while trying to load '{}'",
+                      path.c_str());
         // spdlog::error(ex.what());
       } catch (...) {
-        spdlog::error("An unknown error occured while trying to load '{}'",
-                      (void *)path.c_str());
+        spdlog::error(L"An unknown error occured while trying to load '{}'",
+                      path.c_str());
       }
     }
   } catch (const std::exception &ex) {
-    spdlog::error("An exception occured while reading the directory '{}'",
-                  (void *)inputDir.c_str());
+    spdlog::error(L"An exception occured while reading the directory '{}'",
+                  inputDir.c_str());
     // spdlog::error(ex.what());
   } catch (...) {
-    spdlog::error("An unknown error occured while reading the directory '{}'",
-                  (void *)inputDir.c_str());
+    spdlog::error(L"An unknown error occured while reading the directory '{}'",
+                  inputDir.c_str());
   }
 
   // save files
@@ -208,36 +209,14 @@ InputMappingFile = "cache\inputUserMappings.xml")";
 
 } // namespace InputLoader
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, // handle to DLL module
-                    DWORD fdwReason,    // reason for calling function
-                    LPVOID lpvReserved) // reserved
-{
-  // Perform actions based on the reason for calling.
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
   switch (fdwReason) {
   case DLL_PROCESS_ATTACH:
-    // Initialize once for each new process.
-    // Return FALSE to fail DLL load.
     Utils::CreateLogger();
-    break;
-
-  case DLL_THREAD_ATTACH:
-    // Do thread-specific initialization.
-    break;
-
-  case DLL_THREAD_DETACH:
-    // Do thread-specific cleanup.
-    break;
-
-  case DLL_PROCESS_DETACH:
-
-    if (lpvReserved != nullptr) {
-      break; // do not do cleanup if process termination scenario
-    }
-
-    // Perform any necessary cleanup.
+    spdlog::info("Starting up Input Loader {}", MOD_VERSION_STR);
     break;
   }
-  return TRUE; // Successful DLL_PROCESS_ATTACH.
+  return true;
 }
 
 RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle,
@@ -247,7 +226,7 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle,
   case RED4ext::EMainReason::Load: {
     // DisableThreadLibraryCalls(aHandle);
 
-    spdlog::info("Starting up Input Loader {}", MOD_VERSION_STR);
+    spdlog::info("Connected to RED4ext - registering load callback");
     RED4ext::GameState initState;
     initState.OnEnter = nullptr;
     initState.OnUpdate = nullptr;
