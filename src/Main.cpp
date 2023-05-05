@@ -89,7 +89,7 @@ void MergeDocument(std::filesystem::path path) {
   // pugi::xml_document modDocument =
   // LoadDocument("r6/input/flight_control.xml");
   pugi::xml_document modDocument = LoadDocument(path);
-  spdlog(L"Loading document: {}", path.c_str());
+  spdlog::info(L"Loading document: {}", path.c_str());
 
   // process bindings
   for (pugi::xml_node modNode : modDocument.child("bindings").children()) {
