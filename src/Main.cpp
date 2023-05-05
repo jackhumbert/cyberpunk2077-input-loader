@@ -52,10 +52,10 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
-void Add(RED4ext::PluginHandle *aHandle, std::filesystem::path path) {
+void Add(RED4ext::PluginHandle aHandle, std::filesystem::path path) {
   if (path.is_relative()) {
     char dllFilePath[513] = {0};
-    GetModuleFileNameA(*aHandle, dllFilePath, 512);
+    GetModuleFileNameA(aHandle, dllFilePath, 512);
     path = dllFilePath / path;
   }
   spdlog::info(L"Will load document: {}", path.c_str());
