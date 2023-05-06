@@ -1,4 +1,5 @@
-if(NOT DEFINED MOD_RED4EXT_SDK_DIR)
+if(NOT TARGET RED4ext.SDK)
+# if(NOT DEFINED MOD_RED4EXT_SDK_DIR)
   option(RED4EXT_USE_PCH "" ON)
   option(RED4EXT_HEADER_ONLY "" ON)
 
@@ -12,4 +13,5 @@ if(NOT DEFINED MOD_RED4EXT_SDK_DIR)
   )
 
   set(MOD_RED4EXT_SDK_DIR "${MOD_SOURCE_DIR}/deps/red4ext.sdk")
+# endif()
 endif()
