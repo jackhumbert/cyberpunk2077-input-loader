@@ -9,7 +9,7 @@ if(NOT TARGET pugixml-static)
   endif()
 
   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install)
-  add_subdirectory(${MOD_SOURCE_DIR}/deps/pugixml)
+  add_subdirectory(${MOD_SOURCE_DIR}/deps/pugixml EXCLUDE_FROM_ALL)
   target_compile_definitions(pugixml-static PUBLIC
     _ITERATOR_DEBUG_LEVEL=0
   )
