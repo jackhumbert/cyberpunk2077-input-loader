@@ -11,6 +11,28 @@ This plugin looks for all `r6/input/*.xml` files and merges them with the approp
 
 A log file will be written to `red4ext/logs/input_loader.log` every start-up, if you're having problems.
 
+## Dynamic loading with a RED4ext plugin
+
+Instead of placing .xml files in `r6/input/`, you can dynamically add an input file from a RED4ext plugin with a path relative to its folder (located at `red4ext/plugins/<plugin_name>/inputs.xml`):
+
+```cpp
+#include <InputLoader.hpp>
+
+RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle, 
+                                        RED4ext::EMainReason aReason, 
+                                        const RED4ext::Sdk *aSdk)
+{
+    switch (aReason) {
+        case RED4ext::EMainReason::Load: {
+            InputLoader::Add(aHandle, "inputs.xml");
+        }
+    }
+    return true;
+}
+```
+
+This will prevent the .xml file from being merged if the RED4ext plugin doesn't load (when the game's version doesn't match, etc).
+
 ## Node type
 
 Only children of `<bindings>` are supported currently, but they can all be in the same .xml file (to encourage a mod to have a single .xml file). Depending on the node type, the block will be added to the new `inputContexts.xml` or `inputUserMappings.xml` automatically:
@@ -51,3 +73,7 @@ You can add `append="true"` to a node to avoid overwriting. This is the recommen
 
 </bindings>
 ```
+
+## Uninstallation
+
+You can run `red4ext/plugins/input_loader_uninstall.bat`, which will delete all of the plugin files, as well as the merged cache files, and the game options file that tells the cache files to be used.
