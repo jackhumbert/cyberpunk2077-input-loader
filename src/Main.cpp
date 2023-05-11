@@ -199,7 +199,8 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
       (Utils::GetRootDir() / "r6/cache/inputUserMappings.xml")
           .string()
           .c_str());
-  spdlog::info("Merged inputUserMappings saved to 'r6/cache/inputUserMappings.xml'");
+  spdlog::info(
+      "Merged inputUserMappings saved to 'r6/cache/inputUserMappings.xml'");
 
   // save/resave our config so the game grabs them
   std::string iniFilePath =
@@ -213,7 +214,8 @@ InputMappingFile = "cache\inputUserMappings.xml")";
     spdlog::error("Could not open the ini file to write to");
   fw << fileContents;
   fw.close();
-  spdlog::info("Game config saved to 'engine/config/platform/pc/input_loader.ini'");
+  spdlog::info(
+      "Game config saved to 'engine/config/platform/pc/input_loader.ini'");
 
   return true;
 }

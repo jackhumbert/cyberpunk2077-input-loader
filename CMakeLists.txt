@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(input_loader VERSION 0.2.0)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/cyberpunk_cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/red4ext.sdk/cmake")
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/deps/cyberpunk_cmake")
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/deps/red4ext.sdk/cmake")
+project(input_loader VERSION 0.2.0)
 
 include(CyberpunkMod)
 
@@ -28,7 +28,7 @@ target_link_libraries(${MOD_SLUG}.dll
     # Detours
     spdlog
     pugixml
-)
+) 
 
 target_compile_definitions(${MOD_SLUG}.dll PRIVATE DLLDIR_EX)
 

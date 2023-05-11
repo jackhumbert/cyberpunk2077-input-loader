@@ -79,9 +79,9 @@
 },
 {
   "directory": "C:/Users/Jack/Documents/cyberpunk/input_loader/build",
-  "command": "C:\\PROGRA~1\\MIB055~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1435~1.322\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DSPDLOG_COMPILED_LIB -DSPDLOG_DISABLE_DEFAULT_LOGGER -DSPDLOG_NO_THREAD_ID -DSPDLOG_WCHAR_FILENAMES -DSPDLOG_WCHAR_TO_UTF8_SUPPORT -D_ITERATOR_DEBUG_LEVEL=0 -IC:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\include /DWIN32 /D_WINDOWS /EHsc /Zc:__cplusplus /MP /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /YuC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/cmake_pch.hxx /FpC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/./cmake_pch.cxx.pch /FIC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/cmake_pch.hxx /Fodeps\\spdlog\\CMakeFiles\\spdlog.dir\\src\\fmt.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\src\\fmt.cpp",
-  "file": "C:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\src\\fmt.cpp",
-  "output": "deps\\spdlog\\CMakeFiles\\spdlog.dir\\src\\fmt.cpp.obj"
+  "command": "C:\\PROGRA~1\\MIB055~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1435~1.322\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DSPDLOG_COMPILED_LIB -DSPDLOG_DISABLE_DEFAULT_LOGGER -DSPDLOG_NO_THREAD_ID -DSPDLOG_WCHAR_FILENAMES -DSPDLOG_WCHAR_TO_UTF8_SUPPORT -D_ITERATOR_DEBUG_LEVEL=0 -IC:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\include /DWIN32 /D_WINDOWS /EHsc /Zc:__cplusplus /MP /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /YuC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/cmake_pch.hxx /FpC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/./cmake_pch.cxx.pch /FIC:/Users/Jack/Documents/cyberpunk/input_loader/build/deps/spdlog/CMakeFiles/spdlog.dir/cmake_pch.hxx /Fodeps\\spdlog\\CMakeFiles\\spdlog.dir\\src\\bundled_fmtlib_format.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\src\\bundled_fmtlib_format.cpp",
+  "file": "C:\\Users\\Jack\\Documents\\cyberpunk\\input_loader\\deps\\spdlog\\src\\bundled_fmtlib_format.cpp",
+  "output": "deps\\spdlog\\CMakeFiles\\spdlog.dir\\src\\bundled_fmtlib_format.cpp.obj"
 },
 {
   "directory": "C:/Users/Jack/Documents/cyberpunk/input_loader/build",

@@ -1,5 +1,5 @@
 build/
 game_dir/
-game_dir_prereqs/
+game_dir_requirements/
 .cache/
 *.zip
