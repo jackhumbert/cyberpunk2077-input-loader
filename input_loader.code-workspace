@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
+		"window.title": "Input Loader",
 		"cmake.generator": "Ninja"
 	}
 }

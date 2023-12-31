@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
 <bindings>
+
+	<mapping name="TOUCH_SWIPE_X" type="Relative" >
+        <button id="IK_PS4_TOUCH_SWIPE_X" />
+    </mapping>
+	
+	<mapping name="TOUCH_SWIPE_Y" type="Relative" >
+        <button id="IK_PS4_TOUCH_SWIPE_Y" />
+    </mapping>
+
 	<!-- MAPPINGS -->
 	<mapping name="LeftX_Axis" type="Axis" >
         <button id="IK_Pad_LeftAxisX" />
@@ -12,10 +21,20 @@
         <button id="IK_W" val="1.0" overridableUI="forward"/>
         <button id="IK_S" val="-1.0" overridableUI="back"/>
     </mapping>
+	
+	<mapping name="DigitX_Axis" type="Axis" >
+        <button id="IK_Pad_DigitLeft" val="-1.0" overridableUI="left"/>
+        <button id="IK_Pad_DigitRight" val="1.0" overridableUI="right"/>
+    </mapping>
+	
+	<mapping name="DigitY_Axis" type="Axis" >
+        <button id="IK_Pad_DigitUp" val="1.0" overridableUI="forward"/>
+        <button id="IK_Pad_DigitDown" val="-1.0" overridableUI="back"/>
+    </mapping>
 
 	<mapping name="CrawlingLeftY_Axis" type="Axis" >
         <button id="IK_Pad_LeftAxisY" />
-        <button id="IK_W" val="1.0" overridableUI="back" />
+        <button id="IK_W" val="1.0" overridableUI="forward" />
     </mapping>
 	
 	<mapping name="RightX_Axis" type="Axis" >
@@ -28,6 +47,11 @@
 
     <mapping name="UI_FakeCamera" type="Relative" >
         <button id="IK_Pad_Fake_RelativeRightAxis" />
+        <button id="IK_MouseX" />
+    </mapping>
+
+	<mapping name="UI_TutorFakeCamera" type="Relative">
+        <button id="IK_Pad_Fake_RelativeLeftAxis" />
         <button id="IK_MouseX" />
     </mapping>
 	
@@ -137,6 +161,11 @@
         <button id="IK_A" val="-1.0" overridableUI="left" />
     </mapping>    
 
+	<mapping name="QuestBack" type="Axis" >
+        <button id="IK_Pad_LeftAxisY" />
+        <button id="IK_S" val="-1.0" overridableUI="back" />
+    </mapping>
+	
 	<!-- PANELS -->
 	<mapping name="CharacterPanel_Button" type="Button" >
         <button id="IK_C" />
@@ -151,15 +180,20 @@
 		<button id="IK_T" overridableUI="openPhone"/>
 		<button id="IK_Pad_DigitDown" />
     </mapping>
-	
+
 	<mapping name="PhoneReject_Button" type="Button" >        
-		<button id="IK_T" />
+		<button id="IK_T" overridableUI="openPhone"/>
 		<button id="IK_Pad_DigitDown" />
     </mapping>
 
 	<mapping name="Notification_Button" type="Button" >        
-		<button id="IK_Z" overridableUI="openNotifiation"/>
-		<button id="IK_Pad_DigitLeft" />
+		<button id="IK_T" overridableUI="openNotifiation"/>
+		<button id="IK_Pad_DigitDown" />
+    </mapping>
+	
+	<mapping name="NotificationSMS_Button" type="Button" >        
+		<button id="IK_T" />
+		<button id="IK_Pad_DigitDown" />
     </mapping>
 	
 	<mapping name="popup_action" type="Button" SIEJADependent="true" >
@@ -173,19 +207,36 @@
     </mapping>
 	
 	<mapping name="popup_goto_messenger" type="Button" >
-		<button id="IK_Tab" />
+		<button id="IK_Backspace" />
 		<button id="IK_Pad_LeftThumb" />
-    </mapping>
-
-    <mapping name="popup_maxQuantity" type="Button" >
-		<button id="IK_E" />
+	</mapping>
+	
+	<mapping name="popup_purchase" type="Button" >
+		<button id="IK_F" />
+		<button id="IK_Pad_Y_TRIANGLE" />
+	</mapping>
+	
+	<mapping name="popup_prior" type="Button" >
+		<button id="IK_1" />
+		<button id="IK_A" overridableUI="previousOption" />
+		<button id="IK_Pad_LeftShoulder" />
+	</mapping>
+	
+	<mapping name="popup_next" type="Button" >
+		<button id="IK_3" />
+		<button id="IK_D" overridableUI="nextOption" />
+		<button id="IK_Pad_RightShoulder" />
+	</mapping>
+	
+	<mapping name="popup_maxQuantity" type="Button" >
+		<button id="IK_E" overridableUI="selectDown" />
 		<button id="IK_Pad_DigitUp" />
-    </mapping>
+	</mapping>
 
-    <mapping name="popup_halveQuantity" type="Button" >
-		<button id="IK_Q" />
+	<mapping name="popup_halveQuantity" type="Button" >
+		<button id="IK_Q" overridableUI="selectUp" />
 		<button id="IK_Pad_DigitDown" />
-    </mapping>
+	</mapping>
     
 
   <mapping name="OpenChatBox_Button" type="Button" >
@@ -294,20 +345,81 @@
     </mapping>
 	
 	<mapping name="Crouch_Button" type="Button" >
-		<button id="IK_LControl" overridableUI="crouchHold"/>
+		<button id="IK_RControl" overridableUI="crouchHold" />
     </mapping>
 	
 	<mapping name="ToggleCrouch_Button" type="Button" >
 		<button id="IK_Pad_B_CIRCLE" />
-        <button id="IK_C" overridableUI="crouchToggle"/>
+		<button id="IK_C" overridableUI="crouchToggle" />
     </mapping>
-    
-	<!-- Controller specific dodge -->
+	
     <mapping name="Dodge_Button" type="Button" >
 		<button id="IK_Pad_B_CIRCLE" />
-		<button id="IK_LControl" overridableUI="crouchHold"/>
-		<button id="IK_C" overridableUI="crouchToggle"/>
+		<button id="IK_LControl" overridableUI="dodgeDash" />
     </mapping>
+	
+	<mapping name="UI_Fake_Dodge" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_Pad_Fake_LeftAxis" />
+    </mapping>
+	
+	<mapping name="Dive_Button" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_C" overridableUI="crouchToggle" />
+    </mapping> 
+	
+	<!-- INPUT SCHEME SPECIFIC MAPPINGS -->
+	<!-- LEGACY -->
+	<mapping name="ToggleCrouch_Button_Legacy" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping>
+	
+	<mapping name="Dodge_Button_Legacy" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping>
+	
+	<mapping name="QuickMelee_Button_Legacy" type="Button" >
+		<button id="IK_Pad_RightThumb" />
+    </mapping>
+	
+	<mapping name="Dive_Button_Legacy" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping> 
+	
+	<!-- AGILE -->
+	<mapping name="ToggleCrouch_Button_Agile" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping>
+	
+	<mapping name="Dodge_Button_Agile" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping>
+	
+	<mapping name="QuickMelee_Button_Agile" type="Button" >
+		<button id="IK_Pad_RightThumb" />
+    </mapping>
+	
+	<mapping name="Dive_Button_Agile" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping> 
+	
+	<!-- ALTERNATIVE -->
+	<mapping name="ToggleCrouch_Button_Alternative" type="Button" >
+		<button id="IK_Pad_RightThumb" />
+    </mapping>
+	
+	<mapping name="Dodge_Button_Alternative" type="Button" >
+		<button id="IK_Pad_B_CIRCLE" />
+    </mapping>
+	
+	<mapping name="QuickMelee_Button_Alternative" type="Button" >
+		<button id="IK_Pad_LeftShoulder" />
+		<button id="IK_Q" overridableUI="quickmelee"/>
+    </mapping>
+	
+	<mapping name="Dive_Button_Alternative" type="Button" >
+		<button id="IK_Pad_RightThumb" />
+    </mapping> 
 	
 	<!-- Keyboard specific dodge -->
 	<mapping name="DodgeForward_Button" type="Button" >
@@ -337,7 +449,7 @@
 
 	<mapping name="ToggleWalk_Button" type="Button" >
 		<button id="IK_G" overridableUI="walkToggle"/>
-    </mapping>    
+	</mapping>
 	
 	<mapping name="LeanLeft_Button" type="Button">
 	<button id="IK_Q" />
@@ -396,6 +508,16 @@
     <mapping name="CombatGadget_Button" type="Button" >
 		<button id="IK_Pad_RightShoulder" />
 		<button id="IK_MiddleMouse" overridableUI="combatGadget"/>
+    </mapping> 
+
+    <mapping name="ThrowNPC_Button" type="Button" >
+		<button id="IK_Pad_RightShoulder" />
+		<button id="IK_MiddleMouse" overridableUI="combatGadget"/>
+    </mapping> 
+
+    <mapping name="ThrowNPCAlt_Button" type="Button" >
+		<button id="IK_LeftMouse" overridableUI="attack"/>
+		<button id="IK_Pad_RightTrigger" thresholdPress="0.5" thresholdRelease="0.55" />
     </mapping> 
 
 	<mapping name="UseConsumable_Button" type="Button" >
@@ -475,6 +597,21 @@
 		<button id="IK_X" overridableUI="braindanceExit"/>
     </mapping>
 
+	<mapping name="UETExit_Button" type="Button"  >
+		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_F" />
+    </mapping>
+	
+	<mapping name="UETChangePose_Button" type="Button"  >
+		<button id="IK_Pad_X_SQUARE" />
+		<button id="IK_1" />
+    </mapping>	
+
+	<mapping name="UETWindow_Button" type="Button"  >
+		<button id="IK_Pad_Y_TRIANGLE" />
+		<button id="IK_2" />
+    </mapping>	
+
 	<mapping name="CallVehicle_Button" type="Button" >
 		<button id="IK_Pad_DigitRight" />
 		<button id="IK_V" overridableUI="callVehicle"/>
@@ -484,6 +621,11 @@
 		<button id="IK_Pad_RightShoulder" />
 		<button id="IK_R" overridableUI="radio"/>
     </mapping>
+
+	<mapping name="PocketRadio_Button" type="Button" >
+		<button id="IK_Pad_DigitLeft" />
+		<button id="IK_Z" overridableUI="radio" />
+	</mapping>
 
  	<mapping name="WeaponWheel_Button" type="Button" >
 		<button id="IK_Pad_Y_TRIANGLE" />
@@ -508,7 +650,7 @@
 
  	<mapping name="HolsterWeapon_Button" type="Button" >
 		<button id="IK_B" overridableUI="holsterWeapon"/>
-    </mapping>     
+	</mapping>
 
     <mapping name="OpenQuickHackPanel_Button" type="Button" >
 		<button id="IK_Pad_RightShoulder" />
@@ -572,6 +714,11 @@
 		<button id="IK_Pad_B_CIRCLE" />
 	</mapping>
 
+	<mapping name="UI_Backspace_B_Circle" type="Button" >
+		<button id="IK_Backspace" />
+		<button id="IK_Pad_B_CIRCLE" />
+	</mapping>
+
 	<mapping name="UI_A_Cross" type="Button">
 		<button id="IK_Pad_A_CROSS" />
 	</mapping>
@@ -623,6 +770,10 @@
 		<button id="IK_Pad_LeftShoulder" />
 	</mapping>
 
+	<mapping name="Vision_Hold_Button_Controller" type="Button" >
+		<button id="IK_Pad_LeftShoulder" />
+	</mapping>
+
 	<!-- CYBERWARE -->
 		
 	<mapping name="LeftShoulder_Button" type="Button" >
@@ -644,7 +795,7 @@
 	<buttonGroup id="IK_Pad_LeftRightShoulder" timeWindow="0.08f" >
 		<button id="IK_Pad_LeftShoulder" />
 		<button id="IK_Pad_RightShoulder" />
-    </buttonGroup>
+	</buttonGroup>
 	
 	<!-- TAKEDOWN -->
 	<mapping name="Takedown_Button" type="Button" >
@@ -654,25 +805,25 @@
 	
 	<!-- VEHICLES -->
 	<mapping name="LeftX_Axis_Vehicle" type="Axis" >
-        <button id="IK_Pad_LeftAxisX" />
-        <button id="IK_Right" val="1.0" overridableUI="vehicleSteerRight2"/>
-        <button id="IK_Left" val="-1.0" overridableUI="vehicleSteerLeft2"/>
-        <button id="IK_D" val="1.0" overridableUI="vehicleSteerRight"/>
-        <button id="IK_A" val="-1.0" overridableUI="vehicleSteerLeft"/>
-    </mapping>
+		<button id="IK_Pad_LeftAxisX" />
+		<button id="IK_Right" val="1.0" overridableUI="vehicleSteerRight2"/>
+		<button id="IK_Left" val="-1.0" overridableUI="vehicleSteerLeft2"/>
+		<button id="IK_D" val="1.0" overridableUI="vehicleSteerRight"/>
+		<button id="IK_A" val="-1.0" overridableUI="vehicleSteerLeft"/>
+		</mapping>
 	
-    <mapping name="LeftY_Axis_Vehicle" type="Axis" >
-        <button id="IK_Pad_LeftAxisY" />
-        <button id="IK_LShift" val="1.0" />
-        <button id="IK_LControl" val="-1.0" />
-    </mapping>
+	<mapping name="LeftY_Axis_Vehicle" type="Axis" >
+		<button id="IK_Pad_LeftAxisY" />
+		<button id="IK_LShift" val="1.0" overridableUI="vehicleLeanForward"/>
+		<button id="IK_LControl" val="-1.0" overridableUI="vehicleLeanBackward"/>
+	</mapping>
 
 	<mapping name="LeftY_Axis_Vehicle_RockFB" type="Axis" >
 		<button id="IK_Pad_LeftAxisY" />
 		<button id="IK_W" val="1.0" overridableUI="vehicleAccelerate"/>
 		<button id="IK_S" val="-1.0" overridableUI="vehicleDecelrate"/>
-		<button id="IK_LShift" val="1.0" />
-		<button id="IK_LControl" val="-1.0" />
+		<button id="IK_LShift" val="1.0" overridableUI="vehicleLeanForward"/>
+		<button id="IK_LControl" val="-1.0" overridableUI="vehicleLeanBackward"/>
 	</mapping>
 	
 	<mapping name="VehicleCameraToggle" type="Button" >
@@ -686,12 +837,22 @@
     </mapping>
 	
 	<mapping name="Vehicle_Horn" type="Button" >
-		<button id="IK_Pad_LeftThumb" />
-		<button id="IK_E" overridableUI="vehicleHorn"/>
-    </mapping>
+		<button id="IK_Pad_X_SQUARE" />
+		<button id="IK_Z" overridableUI="vehicleHorn"/>
+   	</mapping>
+	
+	<mapping name="Vehicle_Siren" type="Button" >
+		<button id="IK_Pad_DigitLeft" />
+		<button id="IK_V" overridableUI="vehicleCycleLights"/>
+   	 </mapping>
 	
 	<mapping name="Vehicle_Shoot_Primary" type="Button">
         <button id="IK_Pad_RightTrigger" thresholdPress="0.5" thresholdRelease="0.55" />
+        <button id="IK_LeftMouse" overridableUI="vehicleShootPrimary"/>
+	</mapping>
+	
+	<mapping name="Vehicle_DriverCombat_Shoot_Primary" type="Button">
+        <button id="IK_Pad_RightShoulder" thresholdPress="0.5" thresholdRelease="0.55" />
         <button id="IK_LeftMouse" overridableUI="vehicleShootPrimary"/>
 	</mapping>
 	
@@ -706,14 +867,44 @@
 	</mapping>
 
 	<mapping name="Vehicle_CycleLights" type="Button">
-		<button id="IK_Alt" val="1.0" overridableUI="vehicleLights"/>
-		<button id="IK_Pad_X_SQUARE" />
+		<button id="IK_V" overridableUI="vehicleCycleLights"/>
+		<button id="IK_Pad_DigitLeft" />
 	</mapping>
 
 	<mapping name="VehicleDriverCombatRangedAttack_Button" type="Button" >
         <button id="IK_Pad_RightShoulder" />
         <button id="IK_LeftMouse" overridableUI="vehicleWeaponAttack"/>
 	</mapping>  
+
+	<mapping name="VehicleDriverCombatRangedADS_Button" type="Button" >
+        <button id="IK_Pad_LeftShoulder" />
+        <button id="IK_RightMouse" overridableUI="vehicleWeaponADS"/>
+	</mapping>  
+
+	<mapping name="Vehicle_MountedWeapons_WeaponSlot1_Button" type="Button" >
+		<button id="IK_1" overridableUI="weapon1"/>
+	</mapping>
+
+	<mapping name="Vehicle_MountedWeapons_WeaponSlot2_Button" type="Button" >
+		<button id="IK_2" overridableUI="weapon2"/>
+	</mapping>
+
+	<mapping name="Vehicle_MountedWeapons_SwitchWeapons_Button" type="Button" >
+		<button id="IK_Alt" overridableUI="switchItem"/>
+		<button id="IK_Pad_Y_TRIANGLE" />
+	</mapping>
+
+ 	<mapping name="Vehicle_MountedWeapons_HolsterWeapon_Button" type="Button" >
+		<button id="IK_B" overridableUI="holsterWeapon"/>
+	</mapping>
+
+	<mapping name="Vehicle_MountedWeapons_NextWeapon_Button" type="Button" >
+		<button id="IK_MouseWheelUp" overridableUI="nextWeapon"/>
+	</mapping>
+
+	<mapping name="Vehicle_MountedWeapons_PreviousWeapon_Button" type="Button" >
+		<button id="IK_MouseWheelDown" overridableUI="previousWeapon"/>
+	</mapping>	
 
 	<mapping name="Vehicle_Handbrake" type="Button">
 		<button id="IK_Pad_A_CROSS" />
@@ -724,10 +915,31 @@
 		<button id="IK_F" overridableUI="exitVehicle"/>
 		<button id="IK_Pad_B_CIRCLE" />
 	</mapping>
+	
+	<mapping name="QuickExit_Button" type="Button" >
+		<button id="IK_F" overridableUI="exitVehicle"/>
+		<button id="IK_Pad_B_CIRCLE" />
+	</mapping>
 
-	<mapping name="VehicleCameraInverse_Button" type="Button">
+	<mapping name="VehicleInverseCameraToggle_Button" type="Button">
+		<button id="IK_MiddleMouse" overridableUI="vehicleReverseCam"/>
 		<button id="IK_Pad_RightThumb" />
-		<button id="IK_MiddleMouse" overridableUI="vehicleInverseCam"/>
+	</mapping>
+
+	<mapping name="VehicleCameraReset_Button" type="Button">
+		<button id="IK_C" overridableUI="vehicleCameraReset"/>
+		<button id="IK_Pad_LeftThumb" />
+	</mapping>
+	
+	<mapping name="DriverCombat_Vision_Hold_Activate_Button_Controller" type="Button" >
+		<button id="IK_Pad_DigitUp" />
+		<button id="IK_Pad_DigitDown" />
+		<button id="IK_Pad_DigitLeft" />
+	</mapping>
+	
+	<mapping name="UI_Fake_DriverCombat_Controller_Vision_Activation_Button" type="Button" >
+		<button id="IK_Pad_LeftShoulder" />
+		<button id="IK_Pad_DigitUp" />
 	</mapping>
 	
 	<!-- DEBUG -->
@@ -782,10 +994,23 @@
 		<button id="IK_RShift" />
     </buttonGroup>
 
+	<buttonGroup id="IK_NumPad1_NumPad2" timeWindow = "2.0f" >
+		<button id="IK_NumPad1" />
+		<button id="IK_NumPad2" />
+    </buttonGroup>
+
 	<mapping name="SelectPlayerAnimation_Button" type="Button" >
         <button id="IK_F11_Alt" />
 	</mapping>
 	
+	<mapping name="Debug_ToggleAnimProductionStatus_Button" type="Button" >
+        <button id="IK_NumPad1" />
+	</mapping>
+
+	<mapping name="Debug_ToggleAnimProductionStatusNames_Button" type="Button" >
+        <button id="IK_NumPad1_NumPad2" />
+	</mapping>
+
 	<mapping name="SelectFacialAnimationDebugCamera_Button" type="Button" >
         <button id="IK_F11_Shift" />
 	</mapping>
@@ -840,8 +1065,8 @@
 	</mapping>
 	
 	<mapping name="SceneFastForward_Button" type="Button" >
-        <button id="IK_Pad_B_CIRCLE" />
-        <button id="IK_C" overridableUI="fastForward"/>
+        <button id="IK_Pad_DigitLeft" />
+        <button id="IK_Y" overridableUI="fastForward" />
 	</mapping>
 
 	<mapping name="FastForward_Hold_Button" type="Button" >
@@ -913,17 +1138,17 @@
 	<!-- DEVICE ADVANCE INTERACTION -->
 	<mapping name="UI_MoveCursorVertically" type="Axis">
         <button id="IK_Pad_LeftAxisY" />
-		<!-- <button id="IK_MouseX" /> Ł.SZ we needto solve that in the future. Those types are not comapatible-->
+		<!-- <button id="IK_MouseX" /> L.SZ we needto solve that in the future. Those types are not comapatible-->
     </mapping>
 	
     <mapping name="UI_MoveCursorHorizontally" type="Axis">
         <button id="IK_Pad_LeftAxisX"/>
-		<!-- <button id="IK_MouseY" /> Ł.SZ we needto solve that in the future. Those types are not comapatible-->
+		<!-- <button id="IK_MouseY" /> L.SZ we needto solve that in the future. Those types are not comapatible-->
     </mapping>
 	
 	<mapping name="UI_ScrollVertically" type="Axis">
         <button id="IK_Pad_RightAxisY"/>
-		<!-- <button id="IK_MouseZ" /> Ł.SZ we needto solve that in the future. Those types are not comapatible-->
+		<!-- <button id="IK_MouseZ" /> L.SZ we needto solve that in the future. Those types are not comapatible-->
     </mapping>
 	
 	
@@ -947,29 +1172,47 @@
     </mapping>
 	
 	<mapping name="Open_Craft" type="Button" >
-        <button id="IK_P" />
+        <button id="IK_K" />
     </mapping>
 	
 	<mapping name="Open_SubChar" type="Button" >
         <button id="IK_J" />
     </mapping>
 
+	<mapping name="UI_MoveUp_Ext" type="Button" >
+		<button id="IK_Pad_DigitUp" />
+		<button id="IK_Q" overridableUI="selectUp"/>
+		<button id="IK_MouseWheelUp" />
+		<button id="IK_W" />
+		<button id="IK_Up" overridableUI="selectUpSecondary"/>
+	</mapping>
+	
+	<mapping name="UI_MoveDown_Ext" type="Button" >
+		<button id="IK_Pad_DigitDown" />
+		<button id="IK_E" overridableUI="selectDown"/>
+		<button id="IK_MouseWheelDown" />
+		<button id="IK_S" />
+		<button id="IK_Down" overridableUI="selectDownSecondary"/>
+	</mapping>
+
     <mapping name="UI_MoveUp" type="Button" >
 		<button id="IK_Pad_DigitUp" />
 		<button id="IK_Q" overridableUI="selectUp"/>
+		<button id="IK_W" />
 		<button id="IK_MouseWheelUp" />
 		<button id="IK_Up" overridableUI="selectUpSecondary"/>
     </mapping>
 	
 	<mapping name="UI_ContextHelp" type="Button" >
         <button id="IK_Pad_LeftThumb" />
-		<button id="IK_H" />
+		<button id="IK_U" />
     </mapping>
 	
 	 <mapping name="UI_MoveDown" type="Button" >
         <button id="IK_Pad_DigitDown" />
         <button id="IK_E" overridableUI="selectDown"/>
         <button id="IK_MouseWheelDown" />
+		<button id="IK_S" />
         <button id="IK_Down" overridableUI="selectDownSecondary"/>
     </mapping>
 	
@@ -1035,10 +1278,17 @@
         <button id="IK_C" overridableUI="cancelSelection"/>
         <button id="IK_Escape" />
 		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_RightMouse"/>
+    </mapping>
+	
+	<!-- Used by mq049_braindance.inkwidget -->
+	<mapping name="Braindance_Cancel_Button" type="Button" SIEJADependent="true" >
+        <button id="IK_C" overridableUI="cancelSelection"/>
     </mapping>
 
 	<mapping name="Exit_Button" type="Button" SIEJADependent="true" >
         <button id="IK_C" overridableUI="cancelSelection"/>
+		<button id="IK_RightMouse"/>
 		<button id="IK_Backspace" />
 		<button id="IK_Pad_B_CIRCLE" />
     </mapping>
@@ -1074,6 +1324,16 @@
 		<button id="IK_Backspace"/>
     </mapping>
 
+	<mapping name="ReturnToSniperNest_Button" type="Button" >
+		<button id="IK_C" />
+		<button id="IK_Pad_B_CIRCLE"/>
+    </mapping>
+
+	<mapping name="AimWithSniperNest_Button" type="Button">
+        <button id="IK_Pad_LeftTrigger" thresholdPress="0.5" thresholdRelease="0.55" />
+        <button id="IK_RightMouse" />
+	</mapping>
+
 	<mapping name="CycleNext_Button" type="Button" >
 		<button id="IK_Pad_DigitRight" />
 		<button id="IK_3" overridableUI="nextItem"/>
@@ -1093,7 +1353,7 @@
     </mapping>
 	
 	<mapping name="UI_Drop" type="Button" >
-        <button id="IK_D" />
+        <button id="IK_D" overridableUI="unusedUIDrop"/>
     </mapping>
 	
 	<mapping name="UI_Unequip" type="Button" >
@@ -1262,6 +1522,7 @@
 	<mapping name="back" type="Button" SIEJADependent="true" >
 		<button id="IK_Escape"/>
 		<button id="IK_Pad_B_CIRCLE"/>
+		<button id="IK_RightMouse"/>
 	</mapping>
 
 	<mapping name="system_notification_confirm" type="Button" SIEJADependent="true" >
@@ -1374,7 +1635,60 @@
 	<mapping name="left_stick_y_scroll_down" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_LeftAxisY" thresholdPress="-0.2" thresholdRelease="-0.5" />
 	</mapping>
+
+	<mapping name="sort_list" type="Button" >
+		<button id="IK_Pad_RightThumb" />
+		<button id="IK_Tab" />
+	</mapping>
 	
+	<mapping name="game_version" type="Button">
+		<button id="IK_Pad_RightThumb"/>
+		<button id="IK_P"/>
+	</mapping>
+
+	<mapping name="expansion_popup" type="Button">
+		<button id="IK_Pad_LeftThumb"/>
+		<button id="IK_V"/>
+	</mapping>
+
+	<mapping name="open_map_link" type="Button" >
+		<button id="IK_Pad_Y_TRIANGLE" />
+		<button id="IK_M" />
+	</mapping>
+
+	<mapping name="open_codex_link" type="Button" >
+		<button id="IK_Pad_LeftThumb" />
+		<button id="IK_C" />
+	</mapping>
+
+	<mapping name="gog_rewards" type="Button" >
+		<button id="IK_Pad_RightShoulder" />
+		<button id="IK_G" />
+	</mapping>
+
+	<mapping name="upgrade_cyberware" type="Button" >
+		<button id="IK_E" overridableUI="unusedUpgradeCyberware" />
+		<button id="IK_Pad_X_SQUARE"/>
+
+	</mapping>
+	<mapping name="video_next" type="Button" >
+		<button id="IK_Pad_RightShoulder" />
+		<button id="IK_Pad_RightTrigger"/>
+		<button id="IK_Pad_DigitRight" />
+		<button id="IK_Pad_RightAxisX" thresholdPress="0.2" thresholdRelease="0.5" />
+		<button id="IK_Right" />
+		<button id="IK_3" />
+		<button id="IK_D" overridableUI="nextOption" />
+	</mapping>
+	<mapping name="video_prior" type="Button" >
+		<button id="IK_Pad_LeftShoulder" />
+		<button id="IK_Pad_LeftTrigger" />
+		<button id="IK_Pad_DigitLeft" />
+		<button id="IK_Pad_RightAxisX" thresholdPress="-0.2" thresholdRelease="-0.5" />
+		<button id="IK_Left" />
+		<button id="IK_1" />
+		<button id="IK_A" overridableUI="previousOption"/>
+	</mapping>
 	<!-- Vebdor -->
 	<mapping name="vendor_checkout" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_Y_TRIANGLE"/>
@@ -1391,6 +1705,19 @@
 	<mapping name="restore_default_settings" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_Y_TRIANGLE"/>
 		<button id="IK_F1"/>
+	</mapping>
+
+	<!-- Time Skip -->
+	<mapping name="time_skip_increase" type="Button">
+		<button id="IK_Pad_RightShoulder"/>
+		<button id="IK_Equals"/>
+		<button id="IK_MouseWheelUp"/>
+	</mapping>
+
+	<mapping name="time_skip_decrease" type="Button">
+		<button id="IK_Pad_LeftShoulder"/>
+		<button id="IK_Minus"/>
+		<button id="IK_MouseWheelDown"/>
 	</mapping>
 
 	<!-- World Map Menu -->
@@ -1422,12 +1749,12 @@
 	
 	<mapping name="world_map_menu_zoom_out" type="Axis" >
 		<button id="IK_Pad_LeftTrigger"/>
-		<button id="IK_MouseWheelUp"/>
+		<button id="IK_MouseWheelDown"/>
 	</mapping>
 	
 	<mapping name="world_map_menu_zoom_in" type="Axis" >
 		<button id="IK_Pad_RightTrigger"/>
-		<button id="IK_MouseWheelDown"/>
+		<button id="IK_MouseWheelUp"/>
 	</mapping>
 	
 	<mapping name="world_map_menu_fast_travel" type="Button" SIEJADependent="true" >
@@ -1462,12 +1789,12 @@
 	
 	<mapping name="world_map_menu_cycle_filter_prev" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_DigitLeft"/>
-		<button id="IK_Q"/>
+		<button id="IK_Q" overridableUI="selectUp" />
 	</mapping>
 
 	<mapping name="world_map_menu_cycle_filter_next" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_DigitRight"/>
-		<button id="IK_E"/>
+		<button id="IK_E" overridableUI="selectDown"/>
 	</mapping>
 
 	<mapping name="world_map_filter_navigation_up" type="Button" SIEJADependent="true" >
@@ -1493,6 +1820,22 @@
 		<button id="IK_C" />
 		<button id="IK_Escape" />
 		<button id="IK_Pad_A_CROSS"/>
+		<button id="IK_RightMouse"/>
+	</mapping>
+	
+	<mapping name="action2_popup" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_X_SQUARE"/>
+		<button id="IK_R" overridableUI="secondaryChoiceUI" />
+	</mapping>
+
+	<mapping name="show_all_popup" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_Y_TRIANGLE"/>
+		<button id="IK_Z" />
+	</mapping>
+
+	<mapping name="call_popup" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_Y_TRIANGLE"/>
+		<button id="IK_V" />
 	</mapping>
 
 	<mapping name="proceed_popup" type="Button" SIEJADependent="true" >
@@ -1508,13 +1851,19 @@
 		<button id="IK_RightMouse"/>
 	</mapping>
 
+	<mapping name="close_popup" type="Button" SIEJADependent="true" >
+		<button id="IK_Escape" />
+		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_RightMouse"/>
+	</mapping>
+
 	<mapping name="click_popup" type="Button" SIEJADependent="true" >
 		<button id="IK_LeftMouse"/>
 		<button id="IK_Pad_A_CROSS"/>
 		<button id="IK_Enter"/>
 		<button id="IK_F" overridableUI="selectChoiceUI"/>
 	</mapping>
-    
+
 	<mapping name="menu_click" type="Button" SIEJADependent="true" >
 		<button id="IK_LeftMouse"/>
 		<button id="IK_Pad_A_CROSS"/>
@@ -1533,10 +1882,10 @@
 	</mapping>
     
 	<mapping name="track" type="Button" SIEJADependent="true" >
-		<button id="IK_RightMouse"/>
+		<button id="IK_Space"/>
 		<button id="IK_Pad_X_SQUARE"/>
 	</mapping>
-    
+
 	<mapping name="delete_save" type="Button" SIEJADependent="true" >
 		<button id="IK_X"/>
 		<button id="IK_Pad_Y_TRIANGLE"/>
@@ -1553,8 +1902,9 @@
 	</mapping>
 
 	<mapping name="craft_item" type="Button" SIEJADependent="true" >
-		<button id="IK_Pad_A_CROSS"/>
+		<button id="IK_Pad_X_SQUARE"/>
 		<button id="IK_LeftMouse"/>
+		<button id="IK_F"/>
 	</mapping>
 
 	<mapping name="drop_item" type="Button" SIEJADependent="true" >
@@ -1576,6 +1926,7 @@
 	<mapping name="unequip_item" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_Y_TRIANGLE"/>
 		<button id="IK_MiddleMouse"/>
+		<button id="IK_R"/>
 	</mapping>
 
 	<mapping name="delete_wardrobe_set" type="Button" SIEJADependent="true" >
@@ -1584,8 +1935,13 @@
 	</mapping>
 
 	<mapping name="preview_item" type="Button" SIEJADependent="true" >
-		<button id="IK_Pad_RightTrigger" thresholdPress="0.5" thresholdRelease="0.55"/>
+		<button id="IK_Pad_RightTrigger" thresholdPress="0.5" thresholdRelease="0.55" />
 		<button id="IK_V"/>
+	</mapping>
+
+	<mapping name="favourite_item" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_LeftTrigger" thresholdPress="0.5" thresholdRelease="0.55" />
+		<button id="IK_B"/>
 	</mapping>
 
 	<mapping name="toggle_comparison_tooltip" type="Button" SIEJADependent="true" >
@@ -1608,10 +1964,39 @@
 		<button id="IK_Pad_X_SQUARE"/>
 		<button id="IK_F" overridableUI="selectChoiceUI"/>
 	</mapping>
+	
+	<mapping name="upgrade_attribute_button" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_A_CROSS"/>
+		<button id="IK_LeftMouse"/>
+		<button id="IK_F" overridableUI="selectChoiceUI"/>
+	</mapping>
 
 	<mapping name="upgrade_perk" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_X_SQUARE"/>
 		<button id="IK_F" overridableUI="selectChoiceUI"/>
+	</mapping>
+	
+	<mapping name="buy_perk" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_A_CROSS"/>
+		<button id="IK_LeftMouse"/>
+		<button id="IK_F" overridableUI="selectChoiceUI"/>
+	</mapping>
+	
+	<mapping name="sell_perk" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_Y_TRIANGLE"/>
+		<button id="IK_MiddleMouse"/>
+	</mapping>
+
+	<mapping name="ep1_cyberware_perk_details_forward" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_RightAxisX" thresholdPress="0.3" thresholdRelease="0.5"/>
+		<button id="IK_Pad_RightAxisY" thresholdPress="-0.3" thresholdRelease="-0.5"/>
+		<button id="IK_MouseWheelDown"/>
+	</mapping>
+	
+	<mapping name="ep1_cyberware_perk_details_back" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_RightAxisX" thresholdPress="-0.3" thresholdRelease="-0.5"/>
+		<button id="IK_Pad_RightAxisY" thresholdPress="0.3" thresholdRelease="0.5"/>
+		<button id="IK_MouseWheelUp"/>
 	</mapping>
 
 	<mapping name="engagement_screen" type="Button" SIEJADependent="true" >
@@ -1626,7 +2011,7 @@
 	
 	<mapping name="track_quest" type="Button" SIEJADependent="true" >
       <button id="IK_Pad_Y_TRIANGLE"/>
-      <button id="IK_F" overridableUI="selectChoiceUI"/>
+      <button id="IK_J" overridableUI="selectChoiceUI"/>
     </mapping>
 
 	<mapping name="skip_loading" type="Button" SIEJADependent="true" >
@@ -1636,22 +2021,32 @@
 
 	<mapping name="option_switch_next" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_RightShoulder"/>
-		<button id="IK_D"/>
+		<button id="IK_D" overridableUI="nextOption" />
 	</mapping>
 
 	<mapping name="option_switch_prev" type="Button" SIEJADependent="true" >
 		<button id="IK_Pad_LeftShoulder"/>
-		<button id="IK_A"/>
+		<button id="IK_A" overridableUI="previousOption" />
+	</mapping>
+
+	<mapping name="sub_option_switch_next" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_RightTrigger" />
+		<button id="IK_E" overridableUI="selectDown" />
+	</mapping>
+
+	<mapping name="sub_option_switch_prev" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_LeftTrigger" />
+		<button id="IK_Q" overridableUI="selectUp" />
 	</mapping>
 
 	<mapping name="option_switch_next_settings" type="Button" SIEJADependent="true" >
-		<button id="IK_Pad_DigitRight" />
-		<button id="IK_D"/>
+		<button id="IK_Pad_RightTrigger" thresholdPress="0.1" thresholdRelease="0.05" />
+		<button id="IK_D" overridableUI="nextOption" />
 	</mapping>
 
 	<mapping name="option_switch_prev_settings" type="Button" SIEJADependent="true" >
-		<button id="IK_Pad_DigitLeft" />
-		<button id="IK_A"/>
+		<button id="IK_Pad_LeftTrigger" thresholdPress="0.1" thresholdRelease="0.05" />
+		<button id="IK_A" overridableUI="previousOption" />
 	</mapping>
 
 	<mapping name="brightness_settings" type="Button" SIEJADependent="true" >
@@ -1668,14 +2063,41 @@
 		<button id="IK_Pad_X_SQUARE"/>
 		<button id="IK_B"/>
 	</mapping>
+	
+	<mapping name="edit_safezones" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_Start"/>
+		<button id="IK_H"/>
+	</mapping>
 
 	<mapping name="character_preview_rotate" type="Axis" >
         <button id="IK_Q" val="1.0" overridableUI="selectUp" />
         <button id="IK_E" val="-1.0" overridableUI="selectDown" />
     </mapping>
 
+	<mapping name="sms_view_scroll_km" type="Axis" >
+        <button id="IK_Z" val="1.0" overridableUI="selectUp" />
+        <button id="IK_X" val="-1.0" overridableUI="selectDown" />
+    </mapping>
+
+	<mapping name="phone_open_journal" type="Button" >
+		<button id="IK_Pad_X_SQUARE"/>
+		<button id="IK_J"/>
+	</mapping>
+
+	<mapping name="radio_volume_down" type="Button" >
+		<button id="IK_Pad_DigitLeft"/>
+		<button id="IK_A" overridableUI="previousOption" />
+		<button id="IK_Left"/>
+	</mapping>
+
+	<mapping name="radio_volume_up" type="Button" >
+		<button id="IK_Pad_DigitRight"/>
+		<button id="IK_D" overridableUI="nextOption" />
+		<button id="IK_Right"/>
+	</mapping>
+
 	<!-- PHOTO MODE CUSTOMS -->	
-	<buttonGroup id="IK_PAD_LR_THUMB" timeWindow="0.2f" >
+	<buttonGroup id="IK_PAD_LR_THUMB" timeWindow="0.1f" >
 		<button id="IK_Pad_LeftThumb" />
 		<button id="IK_Pad_RightThumb" />
     </buttonGroup>
@@ -1684,7 +2106,7 @@
         <button id="IK_LeftMouse" />
     </mapping>
 	
-	<mapping name="PhotoMode_MouseRotation" type="Button" >
+<mapping name="PhotoMode_MouseRotation" type="Button" >
         <button id="IK_RightMouse" />
     </mapping>
 	
@@ -1699,6 +2121,7 @@
 
 	<mapping name="ExitPhotoModeButton" type="Button" SIEJADependent="true" >
 		<button id="IK_Escape" />
+		<button id="IK_N" overridableUI="photoMode"/>
 		<button id="IK_Pad_B_CIRCLE" />
 	</mapping>
 	
@@ -1717,8 +2140,8 @@
 	</mapping>
 
 	<mapping name="PhotoModeTakeScreenshot_HiRes_Stadia" type="Button" >
-   		<button id="IK_CAPTURE" />
-  	</mapping>
+		<button id="IK_CAPTURE" />
+	</mapping>
 
 	<mapping name="PhotoMode_CraneDown_Axis" type="Axis" >
         <button id="IK_Pad_LeftTrigger" />
@@ -1779,6 +2202,23 @@
 	<mapping name="minigame_back" type="Button" SIEJADependent="true" >
 		<button id="IK_Backspace" overridableUI="cancelSelection" />
 		<button id="IK_Pad_B_CIRCLE" />
+		<button id="IK_RightMouse"/>
+    </mapping>
+
+	<mapping name="minigame_LeftX_Axis" type="Axis" >
+        <button id="IK_Pad_LeftAxisX" />
+		<button id="IK_Pad_DigitLeft" val="-1.0" overridableUI="left"/>
+		<button id="IK_Pad_DigitRight" val="1.0" overridableUI="right"/>
+        <button id="IK_A" val="-1.0" overridableUI="left"/>
+        <button id="IK_D" val="1.0" overridableUI="right"/>
+    </mapping>
+	
+    <mapping name="minigame_LeftY_Axis" type="Axis" >
+        <button id="IK_Pad_LeftAxisY" />
+		<button id="IK_Pad_DigitUp" val="1.0" overridableUI="forward"/>
+		<button id="IK_Pad_DigitDown" val="-1.0" overridableUI="back"/>
+        <button id="IK_W" val="1.0" overridableUI="forward"/>
+        <button id="IK_S" val="-1.0" overridableUI="back"/>
     </mapping>
 	
 	<mapping name="roach_race_jump" type="Button" SIEJADependent="true" >
@@ -1787,6 +2227,37 @@
 		<button id="IK_Space" overridableUI="selectUpSecondary" />
 		<button id="IK_Pad_A_CROSS"/>
 		<button id="IK_Pad_DigitUp"/>
+	</mapping>
+		 
+	<mapping name="shooter_minigame_fireWeapon" type="Button" SIEJADependent="true" >
+		<button id="IK_J" />
+		<button id="IK_Pad_X_SQUARE"/>
+	</mapping>
+
+	<mapping name="shooter_minigame_prone" type="Button" SIEJADependent="true" >
+		<button id="IK_Pad_LeftAxisY" thresholdPress="-0.1" thresholdRelease="-0.05" />
+		<button id="IK_S" />
+		<button id="IK_Pad_DigitDown"/>
+	</mapping>
+
+	<mapping name="shooter_minigame_jump" type="Button" SIEJADependent="true" >
+		<button id="IK_Space" overridableUI="selectUpSecondary" />
+		<button id="IK_Pad_A_CROSS"/>
+	</mapping>
+
+	<mapping name="shooter_minigame_switchWeapon" type="Button" SIEJADependent="true" >
+		<button id="IK_L" />
+		<button id="IK_Pad_RightShoulder" />
+	</mapping>
+
+	<mapping name="tank_minigame_attack" type="Button" >
+		<button id="IK_Space" overridableUI="jump" />
+		<button id="IK_Pad_LeftTrigger" />
+	</mapping>
+	
+	<mapping name="tank_minigame_AEAMS" type="Button" >
+		<button id="IK_LControl" overridableUI="crouchHold" />
+		<button id="IK_Pad_RightShoulder"/>
 	</mapping>
 
     <!-- Issue reporting - we need to have it here as we want the tool to also work in final configuration. -->
@@ -1818,7 +2289,7 @@
 	<pairedAxes 	name="RightStickUI" 
 					xAxisMapping="right_stick_x" 
 					yAxisMapping="right_stick_y" 
-					deadzonePreset="Preset_2" />					
+					deadzonePreset="Preset_2" />
 	
 	<!-- PRESETS -->
 	<!-- sensitivity range: 1.0 - 100.0 -->
