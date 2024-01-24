@@ -12,6 +12,6 @@
 
 namespace InputLoader {
 
-DLLDIR void Add(RED4ext::PluginHandle aHandle, std::filesystem::path path);
+DLLDIR void Add(RED4ext::PluginHandle aHandle, wchar_t * str);
 
 }
