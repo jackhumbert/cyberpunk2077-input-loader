@@ -52,7 +52,7 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
-void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
+RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   std::filesystem::path path(str);
   if (path.is_relative()) {
     char dllFilePath[513] = {0};
