@@ -136,6 +136,8 @@ void MergeDocument(std::filesystem::path path) {
   // * radialDeadzone
   // * angularDeadzone
 
+  // pugi::xml_document modDocument =
+  // LoadDocument("r6/input/flight_control.xml");
   bool loadOk = true;
   pugi::xml_document modDocument = LoadDocument(path, &loadOk);
   spdlog::info(L"Loading document: {}", path.c_str());
