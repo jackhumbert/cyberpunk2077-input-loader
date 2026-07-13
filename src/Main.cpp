@@ -86,21 +86,55 @@ RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   if (path.is_relative()) {
     // Use the wide-character API to preserve Unicode paths and avoid the
     // 512-byte truncation bug the previous ANSI buffer suffered from.
-    // We dynamically resize, mirroring the approach in Utils::GetRootDir().
+    //
+    // GetModuleFileNameW does NOT clear the last error on success, so a stale
+    // ERROR_INSUFFICIENT_BUFFER from a previous iteration could persist and
+    // loop forever. Reset the last error before each call, and decide whether
+    // to grow using the return value (== bufferSize-1 means possible
+    // truncation) plus a fresh last-error check. Capture the error code
+    // immediately on failure so the log message is accurate.
     std::wstring dllFilePath;
     constexpr size_t pathChunk = MAX_PATH + 1;
-    do {
+    constexpr size_t kMaxResizeIterations = 16;
+    bool resolved = false;
+    DWORD lastErr = ERROR_SUCCESS;
+
+    for (size_t iter = 0; iter < kMaxResizeIterations; ++iter) {
       dllFilePath.resize(dllFilePath.size() + pathChunk, L'\0');
+
+      ::SetLastError(ERROR_SUCCESS);
       auto length = GetModuleFileNameW(aHandle, dllFilePath.data(),
                                        static_cast<uint32_t>(dllFilePath.size()));
-      if (length > 0) {
-        dllFilePath.resize(length);
-      }
-    } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
 
-    if (dllFilePath.empty()) {
-      spdlog::error("InputLoader::Add() - GetModuleFileNameW failed (errno={:#x}); ignoring path '{}'",
-                    GetLastError(), path.string());
+      if (length == 0) {
+        lastErr = ::GetLastError();
+        spdlog::error("InputLoader::Add() - GetModuleFileNameW failed (errno={:#x}); ignoring path '{}'",
+                      lastErr, path.string());
+        return;
+      }
+
+      // GetModuleFileNameW returns chars written, NOT including NUL. If
+      // length < bufferSize-1, the path fit. If length == bufferSize-1, it
+      // *may* have been truncated - confirm with a fresh last-error check.
+      if (length < dllFilePath.size() - 1) {
+        dllFilePath.resize(length);
+        resolved = true;
+        break;
+      }
+
+      lastErr = ::GetLastError();
+      if (lastErr != ERROR_INSUFFICIENT_BUFFER) {
+        // Path is exactly bufferSize-1 chars - not truncation. Done.
+        dllFilePath.resize(length);
+        resolved = true;
+        break;
+      }
+      // else: confirmed truncation, loop and grow.
+    }
+
+    if (!resolved) {
+      spdlog::error("InputLoader::Add() - GetModuleFileNameW exhausted resize iterations (last errno={:#x}); ignoring path '{}'",
+                    lastErr, path.string());
       return;
     }
 
@@ -136,8 +170,6 @@ void MergeDocument(std::filesystem::path path) {
   // * radialDeadzone
   // * angularDeadzone
 
-  // pugi::xml_document modDocument =
-  // LoadDocument("r6/input/flight_control.xml");
   bool loadOk = true;
   pugi::xml_document modDocument = LoadDocument(path, &loadOk);
   spdlog::info(L"Loading document: {}", path.c_str());
