@@ -4,7 +4,17 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/cyberpunk_cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/red4ext.sdk/cmake")
 
-project(input_loader VERSION 0.1.1 LANGUAGES CXX)
+project(input_loader VERSION 0.2.4 LANGUAGES CXX)
+
+# cyberpunk_cmake uses the deprecated `add_custom_command(TARGET ... DEPENDS ...)`
+# form which CMake 3.28+ rejects via policy CMP0175. The submodule is third-party
+# code we don't want to fork, so set the policy to OLD to keep the legacy behavior.
+# `CMAKE_POLICY_DEFAULT_CMP0175` is used because it propagates into add_subdirectory
+# scopes (spdlog, pugixml, etc.) which might trigger the same policy.
+if(POLICY CMP0175)
+  set(CMAKE_POLICY_DEFAULT_CMP0175 OLD)
+  cmake_policy(SET CMP0175 OLD)
+endif()
 
 include(CyberpunkMod)
 
