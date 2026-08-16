@@ -1,7 +1,9 @@
 #pragma once
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <memory>

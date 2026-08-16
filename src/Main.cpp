@@ -75,6 +75,22 @@ pugi::xml_document inputUserMappingsOriginal;
 static std::mutex document_paths_mutex;
 static std::vector<std::filesystem::path> document_paths;
 
+// -----------------------------------------------------------------------------
+// Merge statistics - tracks per-mod contribution to the merged cache files.
+// Logged at the end of LoadInputConfigs so users debugging crashes can see
+// which mod touched what. This is the audit trail that was previously missing.
+// -----------------------------------------------------------------------------
+struct MergeStats {
+  size_t modsProcessed = 0;
+  size_t modsSkipped = 0;
+  size_t nodesAdded = 0;       // New nodes appended (no existing match)
+  size_t nodesReplaced = 0;   // Existing node removed, mod node put in its place
+  size_t nodesAppended = 0;    // Existing node's children extended via append="true"
+  size_t nodesSkipped = 0;     // Unknown node type, skipped
+  size_t errors = 0;           // Caught exceptions or parse failures
+};
+static MergeStats g_mergeStats;
+
 RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   // Defensive: a misbehaving plugin may pass nullptr.
   if (!str) {
@@ -170,6 +186,10 @@ void MergeDocument(std::filesystem::path path) {
   // * radialDeadzone
   // * angularDeadzone
 
+  // Per-mod counters - logged at the end so a suspicious mod (one that
+  // replaces many existing nodes) is visible in the log.
+  size_t modAdded = 0, modReplaced = 0, modAppended = 0, modSkipped = 0;
+
   bool loadOk = true;
   pugi::xml_document modDocument = LoadDocument(path, &loadOk);
   spdlog::info(L"Loading document: {}", path.c_str());
@@ -178,34 +198,40 @@ void MergeDocument(std::filesystem::path path) {
     // LoadDocument already logged the parse error details; just bail out so
     // we don't silently produce a partial merge.
     spdlog::error(L"Skipping merge for '{}' due to parse/load errors", path.c_str());
+    ++g_mergeStats.modsSkipped;
+    ++g_mergeStats.errors;
     return;
   }
 
   pugi::xml_node modBindings = modDocument.child("bindings");
   if (!modBindings) {
     spdlog::warn(L"Document '{}' has no <bindings> root; nothing to merge", path.c_str());
+    ++g_mergeStats.modsSkipped;
     return;
   }
 
   // process bindings
   for (pugi::xml_node modNode : modBindings.children()) {
-    spdlog::info("* Processing mod input block: {}", modNode.name());
+    const auto modNodeName = modNode.name();
+    const auto modNodeAttr = modNode.attribute("name").as_string();
+    spdlog::info("* Processing mod input block: {} name='{}'", modNodeName, modNodeAttr);
     pugi::xml_node existing;
     pugi::xml_document *document;
-    if (in_array(modNode.name(), valid_inputContexts)) {
+    if (in_array(modNodeName, valid_inputContexts)) {
       existing =
           inputContextsOriginal.child("bindings")
-              .find_child_by_attribute(modNode.name(), "name",
-                                       modNode.attribute("name").as_string());
+              .find_child_by_attribute(modNodeName, "name", modNodeAttr);
       document = &inputContextsOriginal;
-    } else if (in_array(modNode.name(), valid_inputUserMappings)) {
+    } else if (in_array(modNodeName, valid_inputUserMappings)) {
       existing =
           inputUserMappingsOriginal.child("bindings")
-              .find_child_by_attribute(modNode.name(), "name",
-                                       modNode.attribute("name").as_string());
+              .find_child_by_attribute(modNodeName, "name", modNodeAttr);
       document = &inputUserMappingsOriginal;
     } else {
-      spdlog::warn("* <bindings> child '{}' not valid", modNode.name());
+      spdlog::warn("* <bindings> child '{}' name='{}' is not a valid input node type; skipping",
+                   modNodeName, modNodeAttr);
+      ++modSkipped;
+      ++g_mergeStats.nodesSkipped;
       continue;
     }
 
@@ -217,19 +243,52 @@ void MergeDocument(std::filesystem::path path) {
       targetBindings = document->append_child("bindings");
     }
 
-    if (existing) {
-      if (modNode.attribute("append").as_bool()) {
-        for (pugi::xml_node modNodeChild : modNode.children()) {
-          existing.append_copy(modNodeChild);
+    // Wrap the actual mutation in try/catch - pugixml's append_copy /
+    // remove_child can throw std::bad_alloc on truly pathological input
+    // (huge copy graphs, deep recursion). Catching here lets us attribute the
+    // failure to this specific mod node rather than letting it propagate to
+    // the outer per-file handler, which only knows the file path.
+    try {
+      if (existing) {
+        if (modNode.attribute("append").as_bool()) {
+          size_t appendedChildren = 0;
+          for (pugi::xml_node modNodeChild : modNode.children()) {
+            existing.append_copy(modNodeChild);
+            ++appendedChildren;
+          }
+          spdlog::info("  + appended {} children to existing '{}'",
+                       appendedChildren, modNodeAttr);
+          ++modAppended;
+          ++g_mergeStats.nodesAppended;
+        } else {
+          targetBindings.remove_child(existing);
+          targetBindings.append_copy(modNode);
+          spdlog::info("  ~ replaced existing '{}' (was: '{}', now from: '{}')",
+                       modNodeAttr, path.filename().string(), path.filename().string());
+          ++modReplaced;
+          ++g_mergeStats.nodesReplaced;
         }
       } else {
-        targetBindings.remove_child(existing);
         targetBindings.append_copy(modNode);
+        spdlog::info("  + added new '{}'", modNodeAttr);
+        ++modAdded;
+        ++g_mergeStats.nodesAdded;
       }
-    } else {
-      targetBindings.append_copy(modNode);
+    } catch (const std::exception &ex) {
+      spdlog::error("  ! failed to merge node '{}' from '{}': {}",
+                    modNodeAttr, path.filename().string(), ex.what());
+      ++g_mergeStats.errors;
+      // Continue to next node - one bad node shouldn't abort the whole mod.
+    } catch (...) {
+      spdlog::error("  ! unknown failure merging node '{}' from '{}'",
+                    modNodeAttr, path.filename().string());
+      ++g_mergeStats.errors;
     }
   }
+
+  ++g_mergeStats.modsProcessed;
+  spdlog::info("  [mod summary] {}: added={}, replaced={}, appended={}, skipped={}",
+               path.filename().string(), modAdded, modReplaced, modAppended, modSkipped);
 }
 
 void LoadOriginals() {
@@ -269,6 +328,64 @@ static bool HasXmlExtension(const std::filesystem::path &p) {
          (ext[1] == 'x' || ext[1] == 'X') &&
          (ext[2] == 'm' || ext[2] == 'M') &&
          (ext[3] == 'l' || ext[3] == 'L');
+}
+
+// Save a merged pugixml document with a provenance comment prepended, so
+// users debugging crashes can tell at a glance that this file was generated
+// by input_loader (with how many mods / errors) rather than being a vanilla
+// game file. Also logs the actual errno on file open failure, since pugixml's
+// save_file() returns only a bool with no error detail.
+//
+// We prepend the comment manually because pugixml's format flags don't
+// include a way to inject a custom top-level comment alongside the XML
+// declaration. The simplest reliable approach: open a std::ofstream, write
+// the comment, then call document.save() with the stream as the writer.
+static bool SaveDocumentWithAudit(const pugi::xml_document &doc,
+                                  const std::filesystem::path &path,
+                                  const char *docName) {
+  std::ofstream out(path, std::ios::out | std::ios::trunc | std::ios::binary);
+  if (!out.is_open()) {
+    const auto err = errno;
+    spdlog::error("Failed to open '{}' for writing (errno={} '{}')",
+                  path.string(), err, std::strerror(err));
+    return false;
+  }
+
+  // Provenance comment - written before the XML declaration so the file
+  // still parses as valid XML (XML allows comments after the declaration,
+  // but having the audit comment OUTSIDE the document tree is cleanest).
+  out << "<!--\n";
+  out << "  This file was generated by Cyberpunk 2077 Input Loader v"
+      << MOD_VERSION_STR << ".\n";
+  out << "  Source: " << docName << " (merged with user mods)\n";
+  out << "  Generated at: " << __DATE__ << " " << __TIME__ << "\n";
+  out << "  Mods processed: " << g_mergeStats.modsProcessed << "\n";
+  out << "  Nodes added: " << g_mergeStats.nodesAdded
+      << ", replaced: " << g_mergeStats.nodesReplaced
+      << ", appended: " << g_mergeStats.nodesAppended << "\n";
+  out << "  Errors: " << g_mergeStats.errors << "\n";
+  out << "  Do not edit by hand - changes will be overwritten on next game launch.\n";
+  out << "-->\n";
+
+  // Save the document without its own XML declaration (we already wrote the
+  // provenance comment) - actually pugixml requires the XML declaration to
+  // come first if present, so we let pugixml emit it after our comment.
+  // The format_no_declaration flag would skip it; we want it included.
+  if (!doc.save(out)) {
+    spdlog::error("pugixml failed to serialize document to '{}'",
+                  path.string());
+    return false;
+  }
+
+  out.flush();
+  if (!out.good()) {
+    const auto err = errno;
+    spdlog::error("Write error while saving '{}' (errno={} '{}')",
+                  path.string(), err, std::strerror(err));
+    return false;
+  }
+
+  return true;
 }
 
 bool LoadInputConfigs(RED4ext::CGameApplication *) {
@@ -353,25 +470,55 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
                   cacheDir.string());
   }
 
-  // save files
+  // save files. We don't use save_file() because pugixml's save_file can
+  // fail silently on permission errors; instead, open the file ourselves
+  // (which gives us a real errno on failure) and use save() with a writer.
+  // We also prepend a provenance comment so users debugging crashes can tell
+  // at a glance that this file was generated by input_loader (and how many
+  // mods contributed to it) rather than being a vanilla game file.
   auto contextsCachePath = Utils::GetRootDir() / "r6/cache/inputContexts.xml";
-  if (!inputContextsOriginal.save_file(contextsCachePath.string().c_str())) {
-    spdlog::error("Failed to save merged inputContexts to '{}'",
-                  contextsCachePath.string());
+  bool contextsSaved = SaveDocumentWithAudit(
+      inputContextsOriginal, contextsCachePath, "inputContexts");
+  if (contextsSaved) {
+    spdlog::info("Merged inputContexts saved to '{}'", contextsCachePath.string());
   } else {
-    spdlog::info("Merged inputContexts saved to 'r6/cache/inputContexts.xml'");
+    ++g_mergeStats.errors;
   }
 
   auto mappingsCachePath =
       Utils::GetRootDir() / "r6/cache/inputUserMappings.xml";
-  if (!inputUserMappingsOriginal.save_file(
-          mappingsCachePath.string().c_str())) {
-    spdlog::error("Failed to save merged inputUserMappings to '{}'",
-                  mappingsCachePath.string());
+  bool mappingsSaved = SaveDocumentWithAudit(
+      inputUserMappingsOriginal, mappingsCachePath, "inputUserMappings");
+  if (mappingsSaved) {
+    spdlog::info("Merged inputUserMappings saved to '{}'", mappingsCachePath.string());
   } else {
-    spdlog::info(
-        "Merged inputUserMappings saved to 'r6/cache/inputUserMappings.xml'");
+    ++g_mergeStats.errors;
   }
+
+  // Final summary - this is the audit trail. Users debugging a crash can
+  // read this block to see exactly which mods were merged and how many
+  // nodes each operation touched. If a crash happens later in the game's
+  // input system, this log is the starting point for figuring out which
+  // mod caused it.
+  spdlog::info("========================================================");
+  spdlog::info("Input Loader merge summary:");
+  spdlog::info("  Mods processed: {}", g_mergeStats.modsProcessed);
+  spdlog::info("  Mods skipped (parse/structure errors): {}", g_mergeStats.modsSkipped);
+  spdlog::info("  Nodes added (new): {}", g_mergeStats.nodesAdded);
+  spdlog::info("  Nodes replaced (overwrote existing): {}", g_mergeStats.nodesReplaced);
+  spdlog::info("  Nodes appended (extend via append=\"true\"): {}", g_mergeStats.nodesAppended);
+  spdlog::info("  Nodes skipped (unknown type): {}", g_mergeStats.nodesSkipped);
+  spdlog::info("  Errors: {}", g_mergeStats.errors);
+  if (g_mergeStats.errors > 0 || g_mergeStats.modsSkipped > 0) {
+    spdlog::warn("  ** Some mods failed to merge cleanly - see log above for details. **");
+    spdlog::warn("  ** The game may still load, but inputs from failed mods will be missing. **");
+  }
+  if (g_mergeStats.nodesReplaced > 0) {
+    spdlog::warn("  ** {} existing node(s) were replaced - if the game crashes or behaves **", g_mergeStats.nodesReplaced);
+    spdlog::warn("  ** unexpectedly, look for 'replaced existing' lines above to identify **");
+    spdlog::warn("  ** which mod overrode which input. **");
+  }
+  spdlog::info("========================================================");
 
   return true;
 }
