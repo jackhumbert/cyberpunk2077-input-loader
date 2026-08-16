@@ -367,13 +367,14 @@ static bool SaveDocumentWithAudit(const pugi::xml_document &doc,
   out << "  Do not edit by hand - changes will be overwritten on next game launch.\n";
   out << "-->\n";
 
-  // Save the document without its own XML declaration (we already wrote the
-  // provenance comment) - actually pugixml requires the XML declaration to
-  // come first if present, so we let pugixml emit it after our comment.
-  // The format_no_declaration flag would skip it; we want it included.
-  if (!doc.save(out)) {
-    spdlog::error("pugixml failed to serialize document to '{}'",
-                  path.string());
+  // Save the document into the stream. pugixml's save(stream) overload returns
+  // void, so we check the stream state afterward instead. pugixml will set
+  // the fail bit on the stream if it cannot write.
+  doc.save(out);
+  if (!out.good()) {
+    const auto err = errno;
+    spdlog::error("pugixml failed to serialize document to '{}' (errno={} '{}')",
+                  path.string(), err, err ? std::strerror(err) : "no errno");
     return false;
   }
 
