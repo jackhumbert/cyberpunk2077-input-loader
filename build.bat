@@ -48,15 +48,29 @@ if errorlevel 1 (
 echo [OK] cl.exe and ninja.exe are available.
 
 REM --- Step 2: Initialize submodules ----------------------------------------
-if not exist "deps\spdlog\CMakeLists.txt" (
+REM  Check each required submodule independently - one might be initialized
+REM  while others aren't (e.g., if git submodule update was interrupted).
+set "NEEDS_INIT=0"
+if not exist "deps\spdlog\CMakeLists.txt"            set "NEEDS_INIT=1"
+if not exist "deps\pugixml\CMakeLists.txt"           set "NEEDS_INIT=1"
+if not exist "deps\cyberpunk_cmake\CMakeLists.txt"    set "NEEDS_INIT=1"
+if not exist "deps\red4ext.sdk\include\RED4ext\RED4ext.hpp" set "NEEDS_INIT=1"
+
+if "%NEEDS_INIT%"=="1" (
   echo [INFO] Initializing git submodules...
   git submodule update --init --recursive
   if errorlevel 1 (
     echo [ERROR] git submodule update failed.
+    echo.
+    echo If the error mentions permission denied or SSH:
+    echo   - The .gitmodules file has been switched to HTTPS URLs, but if you
+    echo     checked out the repo before that change, you may need to run:
+    echo       git submodule sync
+    echo     to refresh the local submodule URL configuration.
     exit /b 1
   )
 ) else (
-  echo [OK] Submodules already present.
+  echo [OK] All submodules present.
 )
 
 REM --- Step 3: Configure CMake -----------------------------------------------
@@ -67,11 +81,16 @@ if exist "build" (
   rmdir /s /q "build"
 )
 
+REM  CMAKE_POLICY_VERSION_MINIMUM=3.5 is needed because some submodules
+REM  (pugixml, spdlog) declare cmake_minimum_required(VERSION 3.4) or older,
+REM  which CMake 4.x rejects by default. Setting it as a -D flag propagates
+REM  into all add_subdirectory() scopes.
 cmake -B build -G Ninja ^
   -DCMAKE_BUILD_TYPE=%CONFIG% ^
   -DCMAKE_CI_BUILD=ON ^
   -DCMAKE_C_COMPILER=cl ^
-  -DCMAKE_CXX_COMPILER=cl
+  -DCMAKE_CXX_COMPILER=cl ^
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 if errorlevel 1 (
   echo [ERROR] CMake configure failed.
