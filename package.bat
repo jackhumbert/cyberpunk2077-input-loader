@@ -24,7 +24,7 @@ if not exist "%ROOT%\game_dir_debug\red4ext\plugins\input_loader\input_loader.pd
 
 REM --- Read version from CMakeLists.txt -------------------------------------
 for /f "tokens=3" %%V in ('findstr /b "project(input_loader" "%ROOT%\CMakeLists.txt"') do (
-    set "VERSION_RAW=%%V"
+    set "VERSION=%%V"
     goto got_version
 )
 
@@ -32,7 +32,7 @@ echo [ERROR] Could not find project version in CMakeLists.txt.
 exit /b 1
 
 :got_version
-set "VERSION=%VERSION_RAW:~0,-1%"
+echo [INFO] Detected version: %VERSION%
 
 echo [INFO] Detected version: %VERSION%
 

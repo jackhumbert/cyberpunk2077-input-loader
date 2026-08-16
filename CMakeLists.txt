@@ -20,8 +20,8 @@ include(CyberpunkMod)
 
 configure_mod(
   NAME "Input Loader"
-  AUTHOR "Jack Humbert"
-  URL "https://github.com/jackhumbert/cyberpunk2077-input-loader"
+  AUTHOR "Original Author: Jack Humbert, Fork by: Artheriax"
+  URL "https://github.com/Artheriax/cyberpunk2077-input-loader-fork"
   LICENSE "Licensed under the MIT license. See the license.md in the root project for details."
 )
 
