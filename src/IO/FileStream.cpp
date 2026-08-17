@@ -26,6 +26,13 @@ bool FileStream::IsOpen() const
 
 void* FileStream::ReadWrite(void* aBuffer, uint32_t aLength)
 {
+    if (!IsOpen())
+    {
+        auto fileName = m_path.stem();
+        spdlog::warn(L"[{}] read error: file is not open", fileName.c_str());
+        return nullptr;
+    }
+
     DWORD numberOfBytesRead;
     if (!ReadFile(m_file, aBuffer, aLength, &numberOfBytesRead, nullptr))
     {
@@ -41,6 +48,11 @@ void* FileStream::ReadWrite(void* aBuffer, uint32_t aLength)
 
 size_t FileStream::GetPointerPosition()
 {
+    if (!IsOpen())
+    {
+        return static_cast<size_t>(-1);
+    }
+
     LARGE_INTEGER filePointer{};
     if (!SetFilePointerEx(m_file, {0}, &filePointer, FILE_CURRENT))
     {
@@ -72,6 +84,13 @@ bool FileStream::Seek(size_t aDistance)
 
 bool FileStream::Seek(size_t aDistance, uint32_t aMoveMethod)
 {
+    if (!IsOpen())
+    {
+        auto fileName = m_path.stem();
+        spdlog::warn(L"[{}] seek error: file is not open", fileName.c_str());
+        return false;
+    }
+
     LARGE_INTEGER distance;
     distance.QuadPart = aDistance;
 
@@ -91,7 +110,12 @@ bool FileStream::Seek(size_t aDistance, uint32_t aMoveMethod)
 
 bool FileStream::Flush()
 {
-    return true;
+    if (!IsOpen())
+    {
+        return false;
+    }
+
+    return FlushFileBuffers(m_file) != 0;
 }
 
 std::filesystem::path FileStream::GetPath() const

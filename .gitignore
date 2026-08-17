@@ -1,6 +1,18 @@
+# Build outputs
 build/
 game_dir/
 game_dir_debug/
-game_dir_requirements/
 .cache/
-*.zip
+
+# Packaged releases (created by package.bat)
+dist/
+
+# Visual Studio / VS Code user-specific state
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+
+# CMake
+CMakeUserPresets.json
