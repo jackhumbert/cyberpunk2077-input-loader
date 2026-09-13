@@ -62,6 +62,131 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
+// The game reads engine/config/platform/pc/input_loader.ini and loads the xmls
+// it names from r6/. If the ini survives while the cache xmls are missing or
+// empty (deleted cache, renamed r6/cache, partial uninstall) the game shows
+// "PRESS [None] TO CONTINUE" and crashes on Space, so never leave that state.
+static const std::filesystem::path iniPath =
+    "engine/config/platform/pc/input_loader.ini";
+static const std::filesystem::path cacheDir = "r6/cache";
+static const std::filesystem::path cacheContextsPath =
+    "r6/cache/inputContexts.xml";
+static const std::filesystem::path cacheMappingsPath =
+    "r6/cache/inputUserMappings.xml";
+// Paths are relative to r6/. Same content as the input_loader.ini in the zip.
+static const char *iniContent =
+    "[Player/Input]\r\n"
+    "InputContextFile = \"cache\\inputContexts.xml\"\r\n"
+    "InputMappingFile = \"cache\\inputUserMappings.xml\"";
+
+// A cache xml the game can load: present, non-empty, and parseable with a
+// <bindings> root (a crash during save can leave a truncated file).
+bool IsUsableFile(const std::filesystem::path &path) {
+  std::error_code ec;
+  if (!std::filesystem::is_regular_file(path, ec) ||
+      std::filesystem::file_size(path, ec) == 0 || ec)
+    return false;
+  pugi::xml_document document;
+  return document.load_file(path.string().c_str()) &&
+         document.child("bindings");
+}
+
+bool HaveOriginals() {
+  return inputContextsOriginal.child("bindings") &&
+         inputUserMappingsOriginal.child("bindings");
+}
+
+void RemoveIni() {
+  auto path = Utils::GetRootDir() / iniPath;
+  std::error_code ec;
+  if (std::filesystem::remove(path, ec)) {
+    spdlog::error("Removed '{}' so the game falls back to its own r6/config "
+                  "input xmls",
+                  iniPath.string());
+  } else if (ec) {
+    spdlog::error("Could not remove '{}' ({}); the game may show PRESS [None] "
+                  "TO CONTINUE until it is deleted by hand",
+                  iniPath.string(), ec.message());
+  }
+}
+
+// Writes the ini when both cache xmls are usable, removes it otherwise.
+void SyncIni() {
+  auto root = Utils::GetRootDir();
+  if (!IsUsableFile(root / cacheContextsPath) ||
+      !IsUsableFile(root / cacheMappingsPath)) {
+    spdlog::error("r6/cache/inputContexts.xml or r6/cache/inputUserMappings.xml "
+                  "is missing or empty");
+    RemoveIni();
+    return;
+  }
+  auto path = root / iniPath;
+  std::string current;
+  {
+    std::ifstream in(path, std::ios::binary);
+    current.assign(std::istreambuf_iterator<char>(in),
+                   std::istreambuf_iterator<char>());
+  }
+  if (current == iniContent)
+    return;
+  std::error_code ec;
+  std::filesystem::create_directories(path.parent_path(), ec);
+  std::ofstream out(path, std::ios::binary | std::ios::trunc);
+  out << iniContent;
+  if (out) {
+    spdlog::info("Wrote '{}'", iniPath.string());
+  } else {
+    spdlog::error("Could not write '{}'; the game will use its own r6/config "
+                  "input xmls",
+                  iniPath.string());
+  }
+}
+
+// Saves both documents to r6/cache and checks the result. Any failure
+// neutralizes the ini so the game never points at broken files.
+bool SaveCache(const char *what) {
+  auto root = Utils::GetRootDir();
+  std::error_code ec;
+  std::filesystem::create_directories(root / cacheDir, ec);
+  bool ok = inputContextsOriginal.save_file(
+      (root / cacheContextsPath).string().c_str());
+  ok = inputUserMappingsOriginal.save_file(
+           (root / cacheMappingsPath).string().c_str()) &&
+       ok;
+  if (ok) {
+    spdlog::info("{} input configs saved to 'r6/cache/inputContexts.xml' and "
+                 "'r6/cache/inputUserMappings.xml'",
+                 what);
+  } else {
+    spdlog::error("Failed to write {} input configs to r6/cache", what);
+  }
+  SyncIni();
+  return ok;
+}
+
+// Runs at plugin load, before anything else is written: makes sure the files
+// the ini points at exist. Only missing or empty files are filled in (with the
+// unmerged game xmls), since the merged output of the previous launch may be
+// what the game reads this time. LoadInputConfigs writes the merged versions.
+void GuardCache() {
+  if (!HaveOriginals()) {
+    spdlog::error("Could not load the game's input xmls from r6/config, not "
+                  "generating anything");
+    RemoveIni();
+    return;
+  }
+  auto root = Utils::GetRootDir();
+  if (IsUsableFile(root / cacheContextsPath) &&
+      IsUsableFile(root / cacheMappingsPath)) {
+    SyncIni();
+    return;
+  }
+  spdlog::warn("r6/cache input xmls are missing or empty (deleted cache or "
+               "partial uninstall); writing the unmerged game xmls so the game "
+               "does not show PRESS [None] TO CONTINUE");
+  SaveCache("Unmerged");
+}
+
 // The attribute the game's own xmls use to identify each <bindings> child.
 // <blend> has no key (only from/to/event) and is always appended.
 const char *KeyAttribute(const std::string &name) {
@@ -185,6 +310,10 @@ void LoadOriginals() {
 }
 
 bool LoadInputConfigs(RED4ext::CGameApplication *) {
+  if (!HaveOriginals()) {
+    spdlog::error("Game input xmls were not loaded, skipping the merge");
+    return true;
+  }
   // block mostly copied from
   // https://github.com/WopsS/TweakDBext/blob/master/src/Hooks.cpp
   auto inputDir = Utils::GetRootDir() / "r6/input";
@@ -233,15 +362,7 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
   }
 
   // save files
-  inputContextsOriginal.save_file(
-      (Utils::GetRootDir() / "r6/cache/inputContexts.xml").string().c_str());
-  spdlog::info("Merged inputContexts saved to 'r6/cache/inputContexts.xml'");
-  inputUserMappingsOriginal.save_file(
-      (Utils::GetRootDir() / "r6/cache/inputUserMappings.xml")
-          .string()
-          .c_str());
-  spdlog::info(
-      "Merged inputUserMappings saved to 'r6/cache/inputUserMappings.xml'");
+  SaveCache("Merged");
 
   return true;
 }
@@ -275,6 +396,7 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle,
                           &initState);
 
     InputLoader::LoadOriginals();
+    InputLoader::GuardCache();
     break;
   }
   case RED4ext::EMainReason::Unload: {
