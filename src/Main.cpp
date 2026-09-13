@@ -62,6 +62,40 @@ pugi::xml_document inputUserMappingsOriginal;
 
 static std::vector<std::filesystem::path> document_paths;
 
+// The attribute the game's own xmls use to identify each <bindings> child.
+// <blend> has no key (only from/to/event) and is always appended.
+const char *KeyAttribute(const std::string &name) {
+  if (name == "hold" || name == "multitap" || name == "repeat" ||
+      name == "toggle" || name == "acceptedEvents")
+    return "action";
+  if (name == "buttonGroup")
+    return "id";
+  if (name == "blend")
+    return nullptr;
+  return "name"; // context, mapping, pairedAxes, preset
+}
+
+pugi::xml_node FindExisting(pugi::xml_node bindings, pugi::xml_node modNode) {
+  const char *key = KeyAttribute(modNode.name());
+  if (!key)
+    return {};
+  pugi::xml_attribute id = modNode.attribute(key);
+  if (!id) {
+    spdlog::warn("* <{}> has no '{}' attribute, cannot match an existing entry",
+                 modNode.name(), key);
+    return {};
+  }
+  return bindings.find_child_by_attribute(modNode.name(), key, id.value());
+}
+
+std::string NodeLabel(pugi::xml_node node) {
+  std::string label = node.name();
+  const char *key = KeyAttribute(node.name());
+  if (key && node.attribute(key))
+    label += std::string(" ") + key + "=\"" + node.attribute(key).value() + "\"";
+  return label;
+}
+
 RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   std::filesystem::path path(str);
   if (path.is_relative()) {
@@ -105,35 +139,31 @@ void MergeDocument(std::filesystem::path path) {
   // process bindings
   for (pugi::xml_node modNode : modDocument.child("bindings").children()) {
     spdlog::info("* Processing mod input block: {}", modNode.name());
-    pugi::xml_node existing;
     pugi::xml_document *document;
     if (in_array(modNode.name(), valid_inputContexts)) {
-      existing =
-          inputContextsOriginal.child("bindings")
-              .find_child_by_attribute(modNode.name(), "name",
-                                       modNode.attribute("name").as_string());
       document = &inputContextsOriginal;
     } else if (in_array(modNode.name(), valid_inputUserMappings)) {
-      existing =
-          inputUserMappingsOriginal.child("bindings")
-              .find_child_by_attribute(modNode.name(), "name",
-                                       modNode.attribute("name").as_string());
       document = &inputUserMappingsOriginal;
     } else {
       spdlog::warn("* <bindings> child '{}' not valid", modNode.name());
       continue;
     }
+    pugi::xml_node bindings = document->child("bindings");
+    pugi::xml_node existing = FindExisting(bindings, modNode);
     if (existing) {
       if (modNode.attribute("append").as_bool()) {
         for (pugi::xml_node modNodeChild : modNode.children()) {
           existing.append_copy(modNodeChild);
         }
+        spdlog::info("* Appended children to <{}>", NodeLabel(modNode));
       } else {
-        document->child("bindings").remove_child(existing);
-        document->child("bindings").append_copy(modNode);
+        bindings.remove_child(existing);
+        bindings.append_copy(modNode);
+        spdlog::info("* Replaced <{}>", NodeLabel(modNode));
       }
     } else {
-      document->child("bindings").append_copy(modNode);
+      bindings.append_copy(modNode);
+      spdlog::info("* Added <{}>", NodeLabel(modNode));
     }
   }
 }
