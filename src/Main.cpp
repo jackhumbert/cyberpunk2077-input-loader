@@ -164,29 +164,6 @@ bool SaveCache(const char *what) {
   return ok;
 }
 
-// Runs at plugin load, before anything else is written: makes sure the files
-// the ini points at exist. Only missing or empty files are filled in (with the
-// unmerged game xmls), since the merged output of the previous launch may be
-// what the game reads this time. LoadInputConfigs writes the merged versions.
-void GuardCache() {
-  if (!HaveOriginals()) {
-    spdlog::error("Could not load the game's input xmls from r6/config, not "
-                  "generating anything");
-    RemoveIni();
-    return;
-  }
-  auto root = Utils::GetRootDir();
-  if (IsUsableFile(root / cacheContextsPath) &&
-      IsUsableFile(root / cacheMappingsPath)) {
-    SyncIni();
-    return;
-  }
-  spdlog::warn("r6/cache input xmls are missing or empty (deleted cache or "
-               "partial uninstall); writing the unmerged game xmls so the game "
-               "does not show PRESS [None] TO CONTINUE");
-  SaveCache("Unmerged");
-}
-
 // The attribute the game's own xmls use to identify each <bindings> child.
 // <blend> has no key (only from/to/event) and is always appended.
 const char *KeyAttribute(const std::string &name) {
@@ -221,6 +198,8 @@ std::string NodeLabel(pugi::xml_node node) {
   return label;
 }
 
+void MergeDocument(std::filesystem::path path);
+
 RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   std::filesystem::path path(str);
   if (path.is_relative()) {
@@ -231,6 +210,14 @@ RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
   }
   spdlog::info(L"Will load document: {}", path.c_str());
   document_paths.emplace_back(path);
+  // Plugins that load after Input Loader register here after the merge at
+  // Load already ran; merge and save right away so the cache is complete
+  // before the game's state machine starts. Plugins that load earlier are
+  // picked up by MergeAll.
+  if (HaveOriginals()) {
+    MergeDocument(path);
+    SaveCache("Merged");
+  }
 }
 
 void MergeDocument(std::filesystem::path path) {
@@ -309,10 +296,23 @@ void LoadOriginals() {
   }
 }
 
-bool LoadInputConfigs(RED4ext::CGameApplication *) {
+// Loads the game's r6/config xmls, merges every r6/input xml and every
+// registered document on top, and writes r6/cache plus the ini.
+//
+// Timing: RED4ext loads every plugin (and runs their Load) before the game's
+// state machine starts, and its BaseInitialization OnEnter callbacks run only
+// after the game's own CBaseInitializationState::OnEnter (which reads the
+// options ini), OnExit about 50 s later. So plugin Load is the only point
+// guaranteed to precede the game's read of input_loader.ini and the cache
+// xmls; merging at the old OnExit callback was why a fresh install needed a
+// second launch.
+void MergeAll() {
+  LoadOriginals();
   if (!HaveOriginals()) {
-    spdlog::error("Game input xmls were not loaded, skipping the merge");
-    return true;
+    spdlog::error("Could not load the game's input xmls from r6/config, not "
+                  "generating anything");
+    RemoveIni();
+    return;
   }
   // block mostly copied from
   // https://github.com/WopsS/TweakDBext/blob/master/src/Hooks.cpp
@@ -363,7 +363,13 @@ bool LoadInputConfigs(RED4ext::CGameApplication *) {
 
   // save files
   SaveCache("Merged");
+}
 
+// Late refresh from a clean r6/config load. The game has most likely read
+// r6/cache by now, so anything new here applies on the next launch.
+bool RefreshInputConfigs(RED4ext::CGameApplication *) {
+  spdlog::info("Refreshing the merged input configs at BaseInitialization exit");
+  MergeAll();
   return true;
 }
 
@@ -390,13 +396,13 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle,
     RED4ext::GameState initState;
     initState.OnEnter = nullptr;
     initState.OnUpdate = nullptr;
-    initState.OnExit = &InputLoader::LoadInputConfigs;
+    initState.OnExit = &InputLoader::RefreshInputConfigs;
 
     aSdk->gameStates->Add(aHandle, RED4ext::EGameStateType::BaseInitialization,
                           &initState);
 
-    InputLoader::LoadOriginals();
-    InputLoader::GuardCache();
+    // Synchronous: must be done before the game reads the ini and r6/cache.
+    InputLoader::MergeAll();
     break;
   }
   case RED4ext::EMainReason::Unload: {
