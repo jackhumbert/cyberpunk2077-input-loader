@@ -1,2 +1,2 @@
 ## Requirements
-* RED4ext 1.27.0+
+* RED4ext 1.29.0+
