@@ -8,6 +8,8 @@
 #include "stdafx.hpp"
 #include <InputLoader.hpp>
 
+#include <bcrypt.h>
+
 namespace InputLoader {
 pugi::xml_document LoadDocument(std::filesystem::path path,
                                 bool *status = nullptr) {
@@ -89,6 +91,73 @@ bool IsUsableFile(const std::filesystem::path &path) {
   pugi::xml_document document;
   return document.load_file(path.string().c_str()) &&
          document.child("bindings");
+}
+
+// Known vanilla r6/config xmls: size and SHA-256 of the file bytes as the game
+// ships them (CRLF). Another mod overwriting a base file breaks every merge
+// built on it (NuclearPulse, harry20199vn), so warn when one is not on this
+// list. Add the new hashes after a game patch (Get-FileHash on r6/config).
+struct VanillaFile {
+  const char *version;
+  uintmax_t size;
+  const char *sha256;
+};
+static const VanillaFile vanillaContexts[] = {
+    {"2.30", 103219,
+     "9130124230e53d5d1ca094795c4794904f041b275ef2a8cfdd65eb2d6a43c6f3"},
+    {"2.31", 103646,
+     "ce780595b77a060119a063434eb4b7dab2312e55252c772ef7ff17428bb90d70"},
+};
+static const VanillaFile vanillaMappings[] = {
+    {"2.30/2.31", 74062,
+     "a57bd58879f3846f300ec9c30fc8111890b9d3aeb6b82842dc4070930e0ff48e"},
+};
+
+std::string Sha256Hex(const std::filesystem::path &path) {
+  std::ifstream in(path, std::ios::binary);
+  std::string data((std::istreambuf_iterator<char>(in)),
+                   std::istreambuf_iterator<char>());
+  std::string hex;
+  BCRYPT_ALG_HANDLE alg = nullptr;
+  if (!BCRYPT_SUCCESS(
+          BCryptOpenAlgorithmProvider(&alg, BCRYPT_SHA256_ALGORITHM, nullptr, 0)))
+    return hex;
+  BCRYPT_HASH_HANDLE hash = nullptr;
+  if (BCRYPT_SUCCESS(BCryptCreateHash(alg, &hash, nullptr, 0, nullptr, 0, 0))) {
+    UCHAR digest[32];
+    if (BCRYPT_SUCCESS(BCryptHashData(hash, (PUCHAR)data.data(),
+                                      (ULONG)data.size(), 0)) &&
+        BCRYPT_SUCCESS(BCryptFinishHash(hash, digest, sizeof(digest), 0))) {
+      static const char *digits = "0123456789abcdef";
+      for (UCHAR b : digest) {
+        hex += digits[b >> 4];
+        hex += digits[b & 15];
+      }
+    }
+    BCryptDestroyHash(hash);
+  }
+  BCryptCloseAlgorithmProvider(alg, 0);
+  return hex;
+}
+
+template <size_t N>
+void CheckVanilla(const std::filesystem::path &relPath,
+                  const VanillaFile (&known)[N]) {
+  auto path = Utils::GetRootDir() / relPath;
+  std::error_code ec;
+  auto size = std::filesystem::file_size(path, ec);
+  auto hash = Sha256Hex(path);
+  for (const auto &entry : known) {
+    if (entry.size == size && hash == entry.sha256) {
+      spdlog::info("'{}' is the vanilla {} file ({} bytes)", relPath.string(),
+                   entry.version, size);
+      return;
+    }
+  }
+  spdlog::warn("'{}' is not a known vanilla file ({} bytes, sha256 {}): either "
+               "a newer game patch or another mod overwrote it. The base "
+               "r6/config xmls must be vanilla; mod inputs belong in r6/input",
+               relPath.string(), size, hash);
 }
 
 bool HaveOriginals() {
@@ -283,17 +352,10 @@ void MergeDocument(std::filesystem::path path) {
 void LoadOriginals() {
   spdlog::info("Loading original input configs for merging");
 
+  CheckVanilla("r6/config/inputContexts.xml", vanillaContexts);
+  CheckVanilla("r6/config/inputUserMappings.xml", vanillaMappings);
   inputContextsOriginal = LoadDocument("r6/config/inputContexts.xml");
-  // malformed XML in 1.6, so we need to load the supplied .xml if this fails
-  bool fixed = false;
-  inputUserMappingsOriginal =
-      LoadDocument("r6/config/inputUserMappings.xml", &fixed);
-  if (!fixed) {
-    spdlog::info("The above is a normal error in 1.6+ - loading backup "
-                 "inputUserMappings.xml");
-    inputUserMappingsOriginal =
-        LoadDocument("red4ext/plugins/input_loader/inputUserMappings.xml");
-  }
+  inputUserMappingsOriginal = LoadDocument("r6/config/inputUserMappings.xml");
 }
 
 // Loads the game's r6/config xmls, merges every r6/input xml and every

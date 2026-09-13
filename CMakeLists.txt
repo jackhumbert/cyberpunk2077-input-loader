@@ -33,14 +33,12 @@ target_link_libraries(${MOD_SLUG}.dll
     # Detours
     spdlog
     pugixml
+    bcrypt
 ) 
 
 target_compile_definitions(${MOD_SLUG}.dll PRIVATE DLLDIR_EX)
 
-configure_mod_file(inputUserMappings.xml red4ext/plugins/${MOD_SLUG}/inputUserMappings.xml)
 configure_mod_file(input_loader.ini engine/config/platform/pc/input_loader.ini)
-configure_mod_file(inputContexts.xml r6/cache/inputContexts.xml)
-configure_mod_file(inputUserMappings.xml r6/cache/inputUserMappings.xml)
 configure_folder_file(readme.md)
 configure_folder_file(license.md)
 # configure_uninstall()

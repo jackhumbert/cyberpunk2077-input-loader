@@ -7,7 +7,7 @@ Sibling repos with the same build/release shape: `../flight_control` (Let There 
 ## Layout
 
 - `src/` - `Main.cpp` (entry, merge logic), `IO/`, `Utils.*`. `include/InputLoader.hpp` is the public header other plugins use.
-- `inputContexts.xml`, `inputUserMappings.xml` at the root are the game's stock input files for the current patch; re-copy them from `r6/config/` after a game patch that changes inputs (last done for 2.30).
+- No vanilla xml copies are bundled (they went stale and users overwrote them with `r6/config`); `src/Main.cpp` holds `vanillaContexts`/`vanillaMappings`, a size + SHA-256 table of the game's `r6/config` xmls per patch, and warns at startup when a base file is not on it (another mod overwrote it, or a new patch).
 - `deps/` - submodules: `red4ext.sdk` (jackhumbert fork, `new-types`), `cyberpunk_cmake`, `pugixml`, `spdlog`, `detours`. `CMAKE_POLICY_VERSION_MINIMUM` is set because pugixml/detours declare pre-3.5 minimums.
 - `game_dir/`, `game_dir_debug/` build outputs zipped for release.
 
@@ -21,6 +21,10 @@ cmake --build build
 cmake --install build
 ```
 
+## Startup order
+
+Everything is merged synchronously in `Main(Load)`, and `Add()` merges on arrival for plugins that load later. RED4ext loads all plugins before the game's state machine starts, but its game-state callbacks are too late: plugin `BaseInitialization` OnEnter runs after the game's own `CBaseInitializationState::OnEnter` (which reads the options ini), and OnExit fires roughly 50 s after plugin load, after the game has read `r6/cache`. Merging only in OnExit was why fresh installs needed a second launch. The OnExit callback is kept only as a refresh.
+
 ## Versioning gotcha
 
 Until 2026-09-13 `CMakeLists.txt` hardcoded `project(input_loader VERSION 0.1.1)`, so every release's `Query()` reported 0.1.1 and dependents (LTBF) had to keep their floor at 0.1.1. It now derives the version from the git tag (`configure_version_from_git`), so the next tag is the first release that reports its real version; dependents can raise their floors only after that release ships.
@@ -28,7 +32,7 @@ Until 2026-09-13 `CMakeLists.txt` hardcoded `project(input_loader VERSION 0.1.1)
 ## Updating for a game patch
 
 1. No address hashes to check (`python tools/check_hashes.py` confirms zero).
-2. Diff the game's new `r6/config/inputContexts.xml` / `inputUserMappings.xml` against the copies here and update them.
+2. Add the new `r6/config/inputContexts.xml` / `inputUserMappings.xml` size and SHA-256 (`Get-FileHash` on a verified install) to the vanilla table in `src/Main.cpp`; otherwise every user gets the "not a known vanilla file" warning.
 3. Bump `deps/red4ext.sdk` and `deps/cyberpunk_cmake` to the commits that know the patch (do the SDK work in `flight_control` first).
 4. Build, install, launch, check `red4ext/logs/input_loader.log`.
 5. Tag.

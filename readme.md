@@ -9,7 +9,7 @@ This plugin looks for all `r6/input/*.xml` files and merges them with the approp
 3. Place a mod's custom .xml file in `r6/input/`
 4. Start the game
 
-A log file will be written to `red4ext/logs/input_loader.log` every start-up, if you're having problems.
+A log file will be written to `red4ext/logs/input_loader.log` every start-up, if you're having problems. The game's own `r6/config/inputContexts.xml` and `inputUserMappings.xml` must be vanilla (mods that overwrite them break every merge); the log warns when they are not.
 
 ## Dynamic loading with a RED4ext plugin
 
