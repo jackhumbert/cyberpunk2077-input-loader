@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!--
+  Placeholder, not an input file. Input Loader never reads this file and the
+  game does not either. It only exists so that Vortex's Cyberpunk 2077
+  extension recognizes the Input Loader file layout.
+
+  Do NOT copy this over r6/config/inputUserMappings.xml. The r6/config xmls
+  must stay vanilla; put mod inputs in r6/input instead.
+-->
+<bindings>
+</bindings>

@@ -39,6 +39,13 @@ target_link_libraries(${MOD_SLUG}.dll
 target_compile_definitions(${MOD_SLUG}.dll PRIVATE DLLDIR_EX)
 
 configure_mod_file(input_loader.ini engine/config/platform/pc/input_loader.ini)
+# Vanilla copies of the game's r6/config xmls, so the ini above points at
+# working files even if the plugin fails to load (it overwrites them at load
+# otherwise). Together with the placeholder they match the file layout the
+# released Vortex Cyberpunk 2077 extension requires to install Input Loader.
+configure_mod_file(fallback/inputContexts.xml r6/cache/inputContexts.xml)
+configure_mod_file(fallback/inputUserMappings.xml r6/cache/inputUserMappings.xml)
+configure_mod_file(fallback/placeholder_inputUserMappings.xml red4ext/plugins/${MOD_SLUG}/inputUserMappings.xml)
 configure_folder_file(readme.md)
 configure_folder_file(license.md)
 # configure_uninstall()

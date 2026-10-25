@@ -7,7 +7,8 @@ Sibling repos with the same build/release shape: `../flight_control` (Let There 
 ## Layout
 
 - `src/` - `Main.cpp` (entry, merge logic), `IO/`, `Utils.*`. `include/InputLoader.hpp` is the public header other plugins use.
-- No vanilla xml copies are bundled (they went stale and users overwrote them with `r6/config`); `src/Main.cpp` holds `vanillaContexts`/`vanillaMappings`, a size + SHA-256 table of the game's `r6/config` xmls per patch, and warns at startup when a base file is not on it (another mod overwrote it, or a new patch).
+- `fallback/` - vanilla copies of the game's `r6/config` xmls, installed to `r6/cache` (the plugin overwrites them at load; they cover the case where it fails to load, since the ini points the game at `r6/cache`), and `placeholder_inputUserMappings.xml`, installed to `red4ext/plugins/input_loader/inputUserMappings.xml`. Neither is read by the plugin. They exist because the released Vortex Cyberpunk extension (v0.12.1) only installs Input Loader when the zip has exactly that file set; v0.2.4 shipped without them and Vortex refused it. The extension's `main` (2026-09-01) detects Input Loader by the DLL alone, so these can go once a release of it ships. The plugin-folder file is a commented placeholder, not a vanilla copy, because users used to copy that one over `r6/config`.
+- `src/Main.cpp` holds `vanillaContexts`/`vanillaMappings`, a size + SHA-256 table of the game's `r6/config` xmls per patch, and warns at startup when a base file is not on it (another mod overwrote it, or a new patch).
 - `deps/` - submodules: `red4ext.sdk` (jackhumbert fork, `new-types`), `cyberpunk_cmake`, `pugixml`, `spdlog`, `detours`. `CMAKE_POLICY_VERSION_MINIMUM` is set because pugixml/detours declare pre-3.5 minimums.
 - `game_dir/`, `game_dir_debug/` build outputs zipped for release.
 
@@ -32,14 +33,14 @@ Until 2026-09-13 `CMakeLists.txt` hardcoded `project(input_loader VERSION 0.1.1)
 ## Updating for a game patch
 
 1. No address hashes to check (`python tools/check_hashes.py` confirms zero).
-2. Add the new `r6/config/inputContexts.xml` / `inputUserMappings.xml` size and SHA-256 (`Get-FileHash` on a verified install) to the vanilla table in `src/Main.cpp`; otherwise every user gets the "not a known vanilla file" warning.
+2. Add the new `r6/config/inputContexts.xml` / `inputUserMappings.xml` size and SHA-256 (`Get-FileHash` on a verified install) to the vanilla table in `src/Main.cpp`; otherwise every user gets the "not a known vanilla file" warning. Copy the same two files into `fallback/`.
 3. Bump `deps/red4ext.sdk` and `deps/cyberpunk_cmake` to the commits that know the patch (do the SDK work in `flight_control` first).
 4. Build, install, launch, check `red4ext/logs/input_loader.log`.
 5. Tag.
 
 State on 2026-09-13: v0.2.3 (built for 2.30) works on game 2.31; pins bumped to the 2.31 SDK.
 
-State on 2026-10-25: game 2.5 vanilla xml hashes added. 2.5 adds entries (mod browser, touch/gyro/JCMS, `*_Switch_Legacy`, autodrive combat contexts) but no new tags or attributes, so the merge is unchanged; `deps/red4ext.sdk` bumped to the 2.5 `new-types` (732300b6) so CMake accepts a 2.5 game dir for `cmake --install`; `deps/cyberpunk_cmake` bumped to 9d97027 (2.5 floors, RED4ext 1.31). Released as v0.2.4.
+State on 2026-10-25: game 2.5 vanilla xml hashes added. 2.5 adds entries (mod browser, touch/gyro/JCMS, `*_Switch_Legacy`, autodrive combat contexts) but no new tags or attributes, so the merge is unchanged; `deps/red4ext.sdk` bumped to the 2.5 `new-types` (732300b6) so CMake accepts a 2.5 game dir for `cmake --install`; `deps/cyberpunk_cmake` bumped to 9d97027 (2.5 floors, RED4ext 1.31). Released as v0.2.4, then v0.2.5 to restore the Vortex file layout (`fallback/`).
 
 ## Releases
 
