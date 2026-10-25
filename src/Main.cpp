@@ -107,10 +107,14 @@ static const VanillaFile vanillaContexts[] = {
      "9130124230e53d5d1ca094795c4794904f041b275ef2a8cfdd65eb2d6a43c6f3"},
     {"2.31", 103646,
      "ce780595b77a060119a063434eb4b7dab2312e55252c772ef7ff17428bb90d70"},
+    {"2.5", 122987,
+     "ec2186f01bc6637d613bffb66e0258482b51d39e42090cb603d3716990923fcf"},
 };
 static const VanillaFile vanillaMappings[] = {
     {"2.30/2.31", 74062,
      "a57bd58879f3846f300ec9c30fc8111890b9d3aeb6b82842dc4070930e0ff48e"},
+    {"2.5", 102074,
+     "6bd75c50e34484c1022d879ec3eea90eb9655459fd14256a98ffbbaebb5f4782"},
 };
 
 std::string Sha256Hex(const std::filesystem::path &path) {

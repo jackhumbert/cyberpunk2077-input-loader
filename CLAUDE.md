@@ -39,6 +39,8 @@ Until 2026-09-13 `CMakeLists.txt` hardcoded `project(input_loader VERSION 0.1.1)
 
 State on 2026-09-13: v0.2.3 (built for 2.30) works on game 2.31; pins bumped to the 2.31 SDK.
 
+State on 2026-10-25: game 2.5 vanilla xml hashes added. 2.5 adds entries (mod browser, touch/gyro/JCMS, `*_Switch_Legacy`, autodrive combat contexts) but no new tags or attributes, so the merge is unchanged; SDK pins not bumped (the plugin uses nothing version-specific).
+
 ## Releases
 
 Push a `vX.Y.Z` tag. `.github/workflows/release.yaml` builds, generates the changelog with git-cliff (`cliff.toml`, conventional commits), publishes the GitHub release, then uploads to Nexus mod 4575 (file id 2601067) via `Nexus-Mods/upload-action`. Needs the repo secret `NEXUSMODS_API_KEY`; the v3 mod id is resolved from the site id first. Full-depth checkout is required for the changelog.
