@@ -11,12 +11,18 @@ void Utils::CreateLogger()
     auto logsDir = red4extDir / L"logs";
     spdlog::filename_t logFile = (logsDir / L"input_loader.log");
 
-    auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto file = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile, true);
+    std::vector<spdlog::sink_ptr> sinks = {std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
+    // Runs in DllMain: an unopenable log file (locked, read-only folder) must not throw
+    // out of the loader and stop the game starting.
+    try
+    {
+        sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile, true));
+    }
+    catch (...)
+    {
+    }
 
-    spdlog::sinks_init_list sinks = {console, file};
-
-    auto logger = std::make_shared<spdlog::logger>("", sinks);
+    auto logger = std::make_shared<spdlog::logger>("", sinks.begin(), sinks.end());
     spdlog::set_default_logger(logger);
 
     logger->flush_on(spdlog::level::trace);

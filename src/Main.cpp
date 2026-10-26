@@ -18,11 +18,12 @@ pugi::xml_document LoadDocument(std::filesystem::path path,
   if (path.is_relative()) {
     path = Utils::GetRootDir() / path;
   }
-  std::string documentPath = (path).string();
-  pugi::xml_parse_result result = document.load_file(documentPath.c_str());
+  // Wide paths throughout: path.string() throws when the game folder or a file
+  // name has characters outside the system code page.
+  pugi::xml_parse_result result = document.load_file(path.c_str());
 
   if (!result) {
-    spdlog::error("XML document parsed with errors: {}", documentPath);
+    spdlog::error(L"XML document parsed with errors: {}", path.c_str());
     spdlog::error("Error description: {}", result.description());
     spdlog::error("Error offset: {}", result.offset);
     if (status)
@@ -89,7 +90,7 @@ bool IsUsableFile(const std::filesystem::path &path) {
       std::filesystem::file_size(path, ec) == 0 || ec)
     return false;
   pugi::xml_document document;
-  return document.load_file(path.string().c_str()) &&
+  return document.load_file(path.c_str()) &&
          document.child("bindings");
 }
 
@@ -221,10 +222,9 @@ bool SaveCache(const char *what) {
   auto root = Utils::GetRootDir();
   std::error_code ec;
   std::filesystem::create_directories(root / cacheDir, ec);
-  bool ok = inputContextsOriginal.save_file(
-      (root / cacheContextsPath).string().c_str());
-  ok = inputUserMappingsOriginal.save_file(
-           (root / cacheMappingsPath).string().c_str()) &&
+  bool ok =
+      inputContextsOriginal.save_file((root / cacheContextsPath).c_str());
+  ok = inputUserMappingsOriginal.save_file((root / cacheMappingsPath).c_str()) &&
        ok;
   if (ok) {
     spdlog::info("{} input configs saved to 'r6/cache/inputContexts.xml' and "
@@ -273,11 +273,35 @@ std::string NodeLabel(pugi::xml_node node) {
 
 void MergeDocument(std::filesystem::path path);
 
+// RED4ext does not catch exceptions from plugin Main, and Add() runs inside
+// other plugins' Main, so anything thrown here would stop the game starting.
+// Log it and fall back to the game's own input xmls instead.
+template <typename F> void Guarded(const char *what, F &&f) {
+  try {
+    f();
+    return;
+  } catch (const std::exception &ex) {
+    spdlog::error("{} failed: {}", what, ex.what());
+  } catch (...) {
+    spdlog::error("{} failed with an unknown error", what);
+  }
+  try {
+    RemoveIni();
+  } catch (...) {
+  }
+}
+
+void AddDocument(RED4ext::PluginHandle aHandle, const wchar_t *str);
+
 RED4EXT_C_EXPORT void Add(RED4ext::PluginHandle aHandle, const wchar_t * str) {
+  Guarded("Adding an input document", [&] { AddDocument(aHandle, str); });
+}
+
+void AddDocument(RED4ext::PluginHandle aHandle, const wchar_t *str) {
   std::filesystem::path path(str);
   if (path.is_relative()) {
-    char dllFilePath[513] = {0};
-    GetModuleFileNameA(aHandle, dllFilePath, 512);
+    wchar_t dllFilePath[MAX_PATH + 1] = {0};
+    GetModuleFileNameW(aHandle, dllFilePath, MAX_PATH);
     std::filesystem::path dllPath(dllFilePath);
     path = dllPath.parent_path() / path;
   }
@@ -398,7 +422,7 @@ void MergeAll() {
         } catch (const std::exception &ex) {
           spdlog::error(L"An exception occured while trying to load '{}'",
                         path.c_str());
-          // spdlog::error(ex.what());
+          spdlog::error("{}", ex.what());
         } catch (...) {
           spdlog::error(L"An unknown error occured while trying to load '{}'",
                         path.c_str());
@@ -412,7 +436,7 @@ void MergeAll() {
       } catch (const std::exception &ex) {
         spdlog::error(L"An exception occured while trying to load '{}'",
                       path.c_str());
-        // spdlog::error(ex.what());
+        spdlog::error("{}", ex.what());
       } catch (...) {
         spdlog::error(L"An unknown error occured while trying to load '{}'",
                       path.c_str());
@@ -421,7 +445,7 @@ void MergeAll() {
   } catch (const std::exception &ex) {
     spdlog::error(L"An exception occured while reading the directory '{}'",
                   inputDir.c_str());
-    // spdlog::error(ex.what());
+    spdlog::error("{}", ex.what());
   } catch (...) {
     spdlog::error(L"An unknown error occured while reading the directory '{}'",
                   inputDir.c_str());
@@ -435,7 +459,7 @@ void MergeAll() {
 // r6/cache by now, so anything new here applies on the next launch.
 bool RefreshInputConfigs(RED4ext::CGameApplication *) {
   spdlog::info("Refreshing the merged input configs at BaseInitialization exit");
-  MergeAll();
+  Guarded("Refreshing the input configs", MergeAll);
   return true;
 }
 
@@ -468,7 +492,7 @@ RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle aHandle,
                           &initState);
 
     // Synchronous: must be done before the game reads the ini and r6/cache.
-    InputLoader::MergeAll();
+    InputLoader::Guarded("Merging the input configs", InputLoader::MergeAll);
     break;
   }
   case RED4ext::EMainReason::Unload: {
